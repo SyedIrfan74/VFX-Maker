@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "displayName": "VFX Maker",
   "description": "Simple to use VFX Maker to help learn and master VFX Graph",
-  "unity": "6000.0.50f1",
+  "unity": "6000.0",
   "dependencies": {
     "com.unity.visualeffectgraph": "17.0.4"
  },
