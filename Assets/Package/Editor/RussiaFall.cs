@@ -1,5 +1,4 @@
 using System.Linq;
-using Unity.Android.Gradle;
 using UnityEditor;
 using UnityEditor.VFX;
 using UnityEngine;
@@ -9,7 +8,7 @@ using Operator = UnityEditor.VFX.Operator;
 
 public static class RussiaFall
 {
-    public static void CreateVFXAsset(string path, string newAssetName, VisualEffectAsset vfx)
+    public static VisualEffectAsset CreateVFXAsset(string path, string newAssetName, VisualEffectAsset vfx)
     {
         Debug.Log("Creating VFX");
 
@@ -17,7 +16,7 @@ public static class RussiaFall
         if (!AssetDatabase.IsValidFolder(path))
         {
             Debug.LogError($"Folder not found! {path}");
-            return;
+            return null;
         }
 
         string assetPath = $"{path}/{newAssetName}.vfx";
@@ -29,6 +28,8 @@ public static class RussiaFall
         vfx = vfxAsset;
 
         Debug.Log($"Created new VFX Graph at: {path}");
+
+        return vfx;
     }
 
     //Generates an Empty VFX Graph with all Main Modules

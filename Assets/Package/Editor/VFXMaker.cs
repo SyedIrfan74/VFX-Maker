@@ -55,7 +55,7 @@ public class VFXMaker : EditorWindow
             path = EditorGUILayout.TextField("Asset File Path: ", path);
             newAssetName = EditorGUILayout.TextField("New Asset Name: ", newAssetName);
 
-            if (GUILayout.Button("Create VFX Asset")) RussiaFall.CreateVFXAsset(path, newAssetName, vfx);
+            if (GUILayout.Button("Create VFX Asset")) vfx = RussiaFall.CreateVFXAsset(path, newAssetName, vfx);
         }
 
         if (vfx != null)
