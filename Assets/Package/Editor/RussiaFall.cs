@@ -245,15 +245,104 @@ public static class RussiaFall
 
         graph.AddChild(hsvColor);
     }
-    public static void GenerateSpiralEmitter()
+    public static void GenerateSpiralEmitter(VisualEffectAsset vfx)
     {
+        var graph = GenerateEmptyTemplate(vfx, 400);
 
+        if (graph == null) return;
+
+        //float kContextOffset = 400.0f;
+
+        //Getting Contexts
+        var contexts = graph.children.OfType<VFXContext>();
+        var spawn = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+        var output = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //INIT START --------------------------------------------------------------------
+        //Constant Spawner
+        var constant = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
+        constant.GetInputSlot(0).value = 100.0f;
+        spawn.AddChild(constant);
+
+        //Set Velocity  
+        var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+        setVelocity.SetSettingValue("Random", Block.RandomMode.Off);
+        setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(0, 1, 0));
+        init.AddChild(setVelocity);
+
+        //Set Lifetime 
+        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
+        setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
+        setLifetime.GetInputSlot(0).value = 15f;
+        init.AddChild(setLifetime);
+        //INIT END --------------------------------------------------------------------
+
+        //UPDATE START --------------------------------------------------------------------
+
+        //Set Position Block, Add to Update
+        var setPosition = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setPosition.SetSettingValue("attribute", VFXAttribute.Position.name);
+        update.AddChild(setPosition);
+
+        //Rotate 3D Operator, Link to Set Position
+        var rotate3D = ScriptableObject.CreateInstance<Operator.Rotate3D>();
+        rotate3D.GetOutputSlot(0).Link(setPosition.GetInputSlot(0));
+
+        //Get Position, Link to Rotate 3D
+        var getPosition = ScriptableObject.CreateInstance<VFXAttributeParameter>();
+        getPosition.SetSettingValue("attribute", VFXAttribute.Position.name);
+        getPosition.GetOutputSlot(0).Link(rotate3D.GetInputSlot(0));
+        
+        //Add Rotate3D & getPosition to graph
+        graph.AddChild(rotate3D);
+        graph.AddChild(getPosition);
+
+
+        //OUTPUT START --------------------------------------------------------------------
+        //Set Color
+        var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        //setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
+        //setColor.SetSettingValue("");
+        output.AddChild(setColor);
+
+        //Create Color Operator with Random Generated Color
+        //var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
+        //hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
+        //hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
+        //hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
+
+        //graph.AddChild(hsvColor);
 
 
     }
     public static void GenerateGravityEmitter()
     {
-
-
+        var block = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        var settings = block.GetSettings(true);
+        foreach (var s in settings)
+        {
+            Debug.Log($"Name: {s.name}, Value: {s.value}");
+        }
     }
 }
+
+
+
+//Link getPosition -> rotate3D
+//rotate3D.GetInputSlot(0).AddChild(getPosition.GetOutputSlot(0));
+
+
+//var rotate3D = ScriptableObject.CreateInstance<Operator.Rotate3D>();
+//var getPosition = ScriptableObject.CreateInstance<VFXAttributeParameter>();
+//getPosition.SetSettingValue("attribute", VFXAttribute.Position.name);
+//rotate3D.GetInputSlot(0).AddChild(getPosition.GetOutputSlot(0));
+//getPosition.GetOutputSlot(0).Attach(rotate3D);
+
+//setPosition.SetSettingValue("random", Block.RandomMode.Off);
+//setLifetime.GetInputSlot(1).value = 10f;
+//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
+//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));

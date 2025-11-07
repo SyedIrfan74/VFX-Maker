@@ -66,7 +66,7 @@ public class VFXMaker : EditorWindow
 
             if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
             if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
-            if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter();
+            if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
             if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter();
 
             GUILayout.EndHorizontal();
