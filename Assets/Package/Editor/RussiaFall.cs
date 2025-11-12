@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.VFX;
@@ -5,6 +6,8 @@ using UnityEngine;
 using UnityEngine.VFX;
 using Block = UnityEditor.VFX.Block;
 using Operator = UnityEditor.VFX.Operator;
+
+//using UnityEditor.VFX.URP;
 
 public static class RussiaFall
 {
@@ -76,6 +79,68 @@ public static class RussiaFall
         graph.AddChild(output);
 
         return graph;
+    }
+
+    //Generates an Empty VFX Graph with all Main Modules
+    private static VFXGraph GenerateEmptyTemplateDiff(VisualEffectAsset vfx, float gapAmount)
+    {
+        if (vfx == null)
+        {
+            Debug.LogError("No VFX Asset Detected! Ensure Asset is Referenced!");
+            return null;
+        }
+
+        //Resets Graph
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        graph.RemoveAllChildren();
+
+        //Creates Spawn Module
+        var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
+        spawner.label = UnityEngine.Random.Range(0, 10000).ToString();
+        spawner.position = new Vector2(0, 0);
+
+        //Creates Init Module
+        var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
+        init.SetSettingValue("capacity", 1024u);
+        init.label = UnityEngine.Random.Range(0, 10000).ToString();
+        init.position = new Vector2(0, gapAmount);
+
+        //Creates Update Module
+        var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
+        update.label = UnityEngine.Random.Range(0, 10000).ToString();
+        update.position = new Vector2(0, gapAmount * 2);
+
+        //Creates Output Module
+        //var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
+        
+
+        //var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitMeshOutput, Unity.RenderPipelines.Universal.Editor");
+        var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitPlanarPrimitiveOutput, Unity.RenderPipelines.Universal.Editor");
+        if (type != null)
+        {
+            var output = ScriptableObject.CreateInstance(type) as VFXContext;
+            Debug.Log("Created URP Lit Output: " + output);
+
+            output.label = UnityEngine.Random.Range(0, 10000).ToString();
+            output.position = new Vector2(0, gapAmount * 3);
+
+            spawner.LinkTo(init);
+            init.LinkTo(update);
+            update.LinkTo(output);
+
+            graph.AddChild(spawner);
+            graph.AddChild(init);
+            graph.AddChild(update);
+            graph.AddChild(output);
+
+            return graph;
+        }
+        else
+        {
+            Debug.LogError("Couldn't find URP Lit Output type!");
+
+            return null;
+        }
     }
     private static void Generate(VisualEffectAsset vfx)
     {
@@ -319,17 +384,15 @@ public static class RussiaFall
 
 
     }
-    public static void GenerateGravityEmitter()
+    public static void GenerateGravityEmitter(VisualEffectAsset vfx)
     {
-        var block = ScriptableObject.CreateInstance<Block.SetAttribute>();
-        var settings = block.GetSettings(true);
-        foreach (var s in settings)
-        {
-            Debug.Log($"Name: {s.name}, Value: {s.value}");
-        }
+        var graph = GenerateEmptyTemplateDiff(vfx, 400);
+
+        if (graph == null) return;
     }
 }
 
+//public class VFXURPLitOutputWrapper : UnityEditor.VFX.URP.VFXURPLitOutput { }
 
 
 //Link getPosition -> rotate3D

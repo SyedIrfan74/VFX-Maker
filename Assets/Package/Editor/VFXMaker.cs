@@ -34,15 +34,22 @@ public class VFXMaker : EditorWindow
     private string path;
     private string newAssetName;
 
+    private bool showPresets;
+    private bool overrideGraph;
+
+    private GUILayoutOption[] titles = { };
+
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
     {
         GetWindow<VFXMaker>();
+
+
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("Target VFX Asset");
+        GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel); //EditorStyles.largeLabel, EditorStyles.boldLabel
 
         //Check if field has been changed
         EditorGUI.BeginChangeCheck();
@@ -58,19 +65,43 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Create VFX Asset")) vfx = RussiaFall.CreateVFXAsset(path, newAssetName, vfx);
         }
 
+        EditorGUILayout.Separator();
+
         if (vfx != null)
         {
-            GUILayout.Label("Presets");
+            //GUILayout.Label("Presets");
+
+            //GUILayout.BeginHorizontal();
+
+            //if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
+            //if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
+            //if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
+            //if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
+
+            //GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
+            showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true, EditorStyles.boldLabel);
 
-            if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
-            if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
-            if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
-            if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter();
-
+            EditorGUI.BeginChangeCheck();
+            var newOverrideGraph = EditorGUILayout.Toggle("Override Graph", overrideGraph, GUILayout.ExpandWidth(true));
+            if (EditorGUI.EndChangeCheck()) overrideGraph = newOverrideGraph;
             GUILayout.EndHorizontal();
+
+            //EditorGUILayout.Space();
+
+            if (showPresets)
+            {
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
+                if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
+                if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
+                if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
+                GUILayout.EndHorizontal();
+            }
         }
+
+        
 
     }
 }
