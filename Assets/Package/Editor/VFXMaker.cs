@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEditor.VFX;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -30,31 +31,42 @@ using UnityEngine.VFX;
 
 public class VFXMaker : EditorWindow
 {
+    [System.Serializable]
+    public enum VFXEnumTest
+    {
+        NONE,
+        VFXURPLitMeshOutput,
+        VFXURPLitPlanarPrimitiveOutput
+    }
+
+    private VFXEnumTest testing;
+
     private VisualEffectAsset vfx;
     private string path;
     private string newAssetName;
 
-    private bool showPresets;
-    private bool overrideGraph;
-
-    private GUILayoutOption[] titles = { };
+    private int numGraphs;
+    private float graphGap = 400.0f;
 
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
     {
         GetWindow<VFXMaker>();
-
-
+    }
+    private void HandleVFXAssetChange(VisualEffectAsset newVFX)
+    {
+        vfx = newVFX;
+        numGraphs = RussiaFall.GetNumGraphs(vfx);
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel); //EditorStyles.largeLabel, EditorStyles.boldLabel
+        GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel); 
 
         //Check if field has been changed
         EditorGUI.BeginChangeCheck();
         var newVFX = (VisualEffectAsset)EditorGUILayout.ObjectField(vfx, typeof(VisualEffectAsset), true);
-        if (EditorGUI.EndChangeCheck()) vfx = newVFX;
+        if (EditorGUI.EndChangeCheck()) HandleVFXAssetChange(newVFX);
 
         //If no asset is present
         if (vfx == null)
@@ -69,39 +81,67 @@ public class VFXMaker : EditorWindow
 
         if (vfx != null)
         {
-            //GUILayout.Label("Presets");
-
-            //GUILayout.BeginHorizontal();
-
-            //if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
-            //if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
-            //if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
-            //if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
-
-            //GUILayout.EndHorizontal();
+            GUILayout.Label("Presets", EditorStyles.whiteLargeLabel);
 
             GUILayout.BeginHorizontal();
-            showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true, EditorStyles.boldLabel);
-
-            EditorGUI.BeginChangeCheck();
-            var newOverrideGraph = EditorGUILayout.Toggle("Override Graph", overrideGraph, GUILayout.ExpandWidth(true));
-            if (EditorGUI.EndChangeCheck()) overrideGraph = newOverrideGraph;
+            if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
+            if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
+            if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
+            if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
             GUILayout.EndHorizontal();
-
-            //EditorGUILayout.Space();
-
-            if (showPresets)
-            {
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
-                if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
-                if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
-                if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
-                GUILayout.EndHorizontal();
-            }
         }
 
-        
+        EditorGUILayout.Separator();
 
+
+        EditorGUILayout.EnumFlagsField(testing);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//private GUILayoutOption[] titles = { };
+//private bool showPresets;
+//private bool overrideGraph;
+
+//EditorStyles.largeLabel, EditorStyles.boldLabel
+//GUILayout.Label("Presets");
+
+//GUILayout.BeginHorizontal();
+
+//if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx);
+//if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx);
+//if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
+//if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
+
+//GUILayout.EndHorizontal();
+
+
+
+//if (vfx != null)
+//{
+//    GUILayout.BeginHorizontal();
+//    showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true, EditorStyles.boldLabel);
+
+//    EditorGUI.BeginChangeCheck();
+//    var newOverrideGraph = EditorGUILayout.Toggle("Override Graph", overrideGraph, GUILayout.ExpandWidth(true));
+//    if (EditorGUI.EndChangeCheck()) overrideGraph = newOverrideGraph;
+//    GUILayout.EndHorizontal();
+
+//    //EditorGUILayout.Space();
+
+//    if (showPresets)
+//    {
+
+//    }
+//}
