@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Dot;
 using UnityEditor.VFX;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -114,8 +115,8 @@ public static class RussiaFall
         //var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
         
 
-        //var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitMeshOutput, Unity.RenderPipelines.Universal.Editor");
-        var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitPlanarPrimitiveOutput, Unity.RenderPipelines.Universal.Editor");
+        var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitMeshOutput, Unity.RenderPipelines.Universal.Editor");
+        //var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitPlanarPrimitiveOutput, Unity.RenderPipelines.Universal.Editor");
         if (type != null)
         {
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
@@ -312,7 +313,7 @@ public static class RussiaFall
     }
     public static void GenerateSpiralEmitter(VisualEffectAsset vfx)
     {
-        var graph = GenerateEmptyTemplate(vfx, 400);
+        var graph = GenerateEmptyTemplateDiff(vfx, 400);
 
         if (graph == null) return;
 
@@ -355,6 +356,7 @@ public static class RussiaFall
 
         //Rotate 3D Operator, Link to Set Position
         var rotate3D = ScriptableObject.CreateInstance<Operator.Rotate3D>();
+        rotate3D.GetInputSlot(1).value = (Position)(new Vector3(1, 0, 0));
         rotate3D.GetOutputSlot(0).Link(setPosition.GetInputSlot(0));
 
         //Get Position, Link to Rotate 3D
@@ -368,21 +370,14 @@ public static class RussiaFall
 
 
         //OUTPUT START --------------------------------------------------------------------
-        //Set Color
-        var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-        //setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-        //setColor.SetSettingValue("");
-        output.AddChild(setColor);
-
-        //Create Color Operator with Random Generated Color
-        //var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-        //hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-        //hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-        //hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-        //graph.AddChild(hsvColor);
-
-
+        var setColorOverLifeType = Type.GetType("UnityEditor.VFX.Block.AttributeFromCurve, Unity.VisualEffectGraph.Editor");
+        if (setColorOverLifeType != null)
+        {
+            var setColorOverLife = ScriptableObject.CreateInstance(setColorOverLifeType) as VFXBlock;
+            setColorOverLife.SetSettingValue("attribute", VFXAttribute.Color.name);
+            output.AddChild(setColorOverLife);
+        }
+        else Debug.LogError("Failed to find SetColorOverLife block type. Unity version or assembly name may differ.");
     }
     public static void GenerateGravityEmitter(VisualEffectAsset vfx)
     {
@@ -409,3 +404,20 @@ public static class RussiaFall
 //setLifetime.GetInputSlot(1).value = 10f;
 //setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
 //setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
+
+
+
+//Create Color Operator with Random Generated Color
+//var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
+//hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
+//hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
+//hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
+
+//graph.AddChild(hsvColor);
+
+
+
+//Set Color
+//var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
+//setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
+//output.AddChild(setColor);
