@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.VFX;
+using UnityEditor.VFX.Block;
 using UnityEngine;
 using UnityEngine.VFX;
 using Block = UnityEditor.VFX.Block;
@@ -319,9 +320,57 @@ public static class RussiaFall
     }
     public static void GenerateGravityEmitter(VisualEffectAsset vfx)
     {
-        var graph = GenerateEmptyTemplateDiff(vfx, 400);
+        var graph = GenerateEmptyTemplate(vfx, 400);
 
         if (graph == null) return;
+
+        float kContextOffset = 400.0f;
+
+        //Getting Contexts
+        var contexts = graph.children.OfType<VFXContext>();
+        var spawn = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+        var output = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //Constant Rate Spawner
+        var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
+        constantRate.GetInputSlot(0).value = 32.0f;
+        spawn.AddChild(constantRate);
+
+        //Set Velocity Random per Component 
+        var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+        setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
+        setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
+        init.AddChild(setVelocity);
+
+        //Set Lifetime Random per Component
+        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
+        setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        setLifetime.GetInputSlot(0).value = 1f;
+        setLifetime.GetInputSlot(1).value = 10f;
+        init.AddChild(setLifetime);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        //constantRate.GetInputSlot(0).value = 32.0f;
+        update.AddChild(gravity);
+
+        //Set Color
+        var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
+        output.AddChild(setColor);
+
+        //Create Color Operator with Random Generated Color
+        var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
+        hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
+        hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
+        hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
+
+        graph.AddChild(hsvColor);
     }
 
 
