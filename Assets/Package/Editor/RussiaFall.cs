@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEditor.VFX;
 using UnityEditor.VFX.Block;
 using UnityEngine;
@@ -150,6 +151,7 @@ public static class RussiaFall
         }
     }
     
+    //PRESETS START
     //Creates a Basic Emitter VFX Graph
     public static void GenerateConstantEmitter(VisualEffectAsset vfx)
     {
@@ -356,7 +358,6 @@ public static class RussiaFall
 
         //Add Gravity
         var gravity = ScriptableObject.CreateInstance<Gravity>();
-        //constantRate.GetInputSlot(0).value = 32.0f;
         update.AddChild(gravity);
 
         //Set Color
@@ -372,8 +373,68 @@ public static class RussiaFall
 
         graph.AddChild(hsvColor);
     }
+    //PRESETS END
 
+    //MODULES START
+    //Adds VFX Spawn Context to the Current VFX Graph
+    public static void SpawnModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
 
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+    }
+
+    //Adds VFX Initialise Context to the Current VFX Graph
+    public static void InitialiseModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+    }
+
+    //Adds VFX Update Context to the Current VFX Graph
+    public static void UpdateModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+    }
+
+    //Adds VFX Output Context to the Current VFX Graph
+    public static void OutputModule(VisualEffectAsset vfx, VFXMaker.VFXEnumTest VFXEnum)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+    }
+
+    //Adds gravity to the current VFX Graph
+    public static void GravityModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+    }
     //HELPER FUNCTIONS
 
     //Finds the number of Spawn Contexts there are within a VFX Asset

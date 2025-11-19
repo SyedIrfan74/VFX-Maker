@@ -79,8 +79,10 @@ public class VFXMaker : EditorWindow
 
         EditorGUILayout.Separator();
 
+        //If an Asset is detected
         if (vfx != null)
         {
+            //PRESETS START
             GUILayout.Label("Presets", EditorStyles.whiteLargeLabel);
 
             GUILayout.BeginHorizontal();
@@ -89,12 +91,37 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
             if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
             GUILayout.EndHorizontal();
+            //PRESETS END
+
+            EditorGUILayout.Separator();
+
+            //MODULES START
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Modules", EditorStyles.whiteLargeLabel);
+
+            EditorGUI.BeginChangeCheck();
+            testing = (VFXEnumTest)EditorGUILayout.EnumFlagsField(testing);
+            EditorGUI.EndChangeCheck();
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Spawn Context")) RussiaFall.SpawnModule(vfx);
+            if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
+            if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
+            if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, testing);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
+            GUILayout.EndHorizontal();
+            //MODULES END
         }
 
         EditorGUILayout.Separator();
 
 
-        EditorGUILayout.EnumFlagsField(testing);
+        
     }
 }
 
