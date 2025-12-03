@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters;
+using Unity.VisualScripting.YamlDotNet.Core;
 using UnityEditor;
 using UnityEditor.Graphs;
 using UnityEditor.VFX;
@@ -153,7 +157,7 @@ public static class RussiaFall
     
     //PRESETS START
     //Creates a Basic Emitter VFX Graph
-    public static void GenerateConstantEmitter(VisualEffectAsset vfx)
+    public static void GenerateConstantEmitter(VisualEffectAsset vfx, bool overrule)
     {
         var graph = GenerateEmptyTemplate(vfx, 400);
 
@@ -380,48 +384,78 @@ public static class RussiaFall
     public static void SpawnModule(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
 
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
+        //Creates Spawn Module
+        var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
+        graph.AddChild(spawner);
     }
 
     //Adds VFX Initialise Context to the Current VFX Graph
     public static void InitialiseModule(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
 
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
+        //Creates Initialize Module
+        var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
+        graph.AddChild(init);
     }
 
     //Adds VFX Update Context to the Current VFX Graph
     public static void UpdateModule(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
 
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
+        //Creates Update Module
+        var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
+        graph.AddChild(update);
     }
 
     //Adds VFX Output Context to the Current VFX Graph
     public static void OutputModule(VisualEffectAsset vfx, VFXMaker.VFXEnumTest VFXEnum)
     {
+        if (VFXEnum == VFXMaker.VFXEnumTest.NONE)
+        {
+            Debug.LogError("Please Select Output Type!");
+            return;
+        }
+
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+
+        var type = Type.GetType("UnityEditor.VFX.URP." + VFXEnum.ToString() +  ", Unity.RenderPipelines.Universal.Editor");
+        if (type == null)
+        {
+            Debug.LogError("Could not find Type!");
+            return;
+        }
+
+        var output = ScriptableObject.CreateInstance(type) as VFXContext;
+        graph.AddChild(output);
+    }
+
+    //Adds Constant Spawner Node to Spawn Context
+    public static void ConstantModule(VisualEffectAsset vfx)
+    {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+        var spawn = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
 
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
+        //Constant Rate Spawner
+        var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
+        constantRate.GetInputSlot(0).value = 32.0f;
+        spawn.AddChild(constantRate);
+    }
+
+    //Adds Burst Spawner Node to Spawn Context
+    public static void BurstModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var spawn = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
+
+        //Constant Rate Spawner
+        var burst = ScriptableObject.CreateInstance<VFXSpawnerBurst>();
+        burst.GetInputSlot(0).value = 32.0f;
+        spawn.AddChild(burst);
     }
 
     //Adds gravity to the current VFX Graph
@@ -435,16 +469,197 @@ public static class RussiaFall
         var gravity = ScriptableObject.CreateInstance<Gravity>();
         update.AddChild(gravity);
     }
+
+    //Add Exposed Float Property to the Graph
+    public static void AddFloatProperty(VisualEffectAsset vfx, string propertyName, float defaultValue)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        if (graph == null)
+        {
+            Debug.LogError("Unable to access VFX Graph.");
+            return;
+        }
+
+        // Create a new VFXParameter of type Float
+        var param = ScriptableObject.CreateInstance<VFXParameter>();
+        param.Init(typeof(float));             // Parameter Type
+        param.exposed = true;                  // Make it exposed
+        param.exposedName = propertyName;             // Property Name
+
+        // Set default value
+        param.value = defaultValue;
+
+        // Add to the graph
+        graph.AddChild(param);
+
+        // Save
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(vfx));
+        //Debug.Log($"Created exposed float: {propertyName}");
+    }
+    //MODULES END
+
+
     //HELPER FUNCTIONS
 
     //Finds the number of Spawn Contexts there are within a VFX Asset
     public static int GetNumGraphs(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
-        return graph.children.OfType<VFXContext>().Count(c => c.contextType == VFXContextType.Spawner); ;
+        return graph.children.OfType<VFXContext>().Count(c => c.contextType == VFXContextType.Spawner);
     }
 
+    
 
+    public static List<ExposedPropertyInfo> GetExposedProperties(VisualEffectAsset vfx)
+    {
+        var results = new List<ExposedPropertyInfo>();
+
+        if (vfx == null) return results;
+
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        if (graph == null) return results;
+
+        //Gets Parameters
+        var parameters = graph.children.OfType<VFXParameter>();
+
+        foreach (var p in parameters)
+        {
+            // Only include exposed parameters
+            // p.exposed is accessible for reading even if the type is internal
+            try
+            {
+                if (!p.exposed) continue;
+            }
+            catch
+            {
+                // If for some Unity version p.exposed isn't accessible, fall back to continue.
+                continue;
+            }
+
+            // Name: try public property, fallback to common backing field names
+            string name = p.exposedName;
+
+            // Type: try property "type" or backing field "m_Type"
+            Type valueType = TryGetTypeMember(p, "type") ?? TryGetTypeMember(p, "m_Type");
+
+            Debug.Log(valueType);
+
+            // Value: use reflection to get the value. Many VFXParameter implementations expose a "value" property.
+            object value = TryGetValueMember(p);
+
+            results.Add(new ExposedPropertyInfo(name, valueType, value, p));
+        }
+
+        return results;
+    }
+
+    public static void SetExposedValue(VisualEffectAsset asset, ExposedPropertyInfo info, object newValue)
+    {
+        if (info.InternalParameter == null)
+            return;
+
+        var param = info.InternalParameter;
+        var t = param.GetType();
+
+        // Assign to "value" property via reflection
+        var pi = t.GetProperty("value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (pi != null && pi.CanWrite)
+        {
+            pi.SetValue(param, newValue);
+        }
+        else
+        {
+            // try fallback "m_Value" field
+            var fi = t.GetField("m_Value", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fi != null)
+                fi.SetValue(param, newValue);
+        }
+
+        info.Value = newValue;
+
+        // Reimport to apply changes
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
+    }
+
+    private static string TryGetStringMember(object obj, string memberName)
+    {
+        var t = obj.GetType();
+        var pi = t.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        //Debug.Log(pi);
+        if (pi != null)
+        {
+            try { var v = pi.GetValue(obj); return v?.ToString(); } catch { }
+        }
+        var fi = t.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (fi != null)
+        {
+            try { var v = fi.GetValue(obj); return v?.ToString(); } catch { }
+        }
+        return null;
+    }
+
+    private static Type TryGetTypeMember(object obj, string memberName)
+    {
+        var t = obj.GetType();
+        var pi = t.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (pi != null && pi.PropertyType == typeof(Type))
+        {
+            try { return pi.GetValue(obj) as Type; } catch { }
+        }
+
+        var fi = t.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (fi != null && fi.FieldType == typeof(Type))
+        {
+            try { return fi.GetValue(obj) as Type; } catch { }
+        }
+
+        // Some versions store a serialized string for the type or enum - try to handle that:
+        if (pi != null && pi.PropertyType == typeof(string))
+        {
+            try
+            {
+                var typeName = pi.GetValue(obj) as string;
+                if (!string.IsNullOrEmpty(typeName))
+                {
+                    return Type.GetType(typeName) ?? AppDomain.CurrentDomain.GetAssemblies()
+                               .Select(a => a.GetType(typeName)).FirstOrDefault(t2 => t2 != null);
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
+    private static object TryGetValueMember(object paramObj)
+    {
+        var t = paramObj.GetType();
+
+        // common property "value"
+        var pi = t.GetProperty("value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (pi != null && pi.CanRead)
+        {
+            try { return pi.GetValue(paramObj); } catch { }
+        }
+
+        // try field "value" or "m_Value"
+        var fi = t.GetField("value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                 ?? t.GetField("m_Value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (fi != null)
+        {
+            try { return fi.GetValue(paramObj); } catch { }
+        }
+
+        // fallback: try property "defaultValue" etc.
+        var fallbackPi = t.GetProperty("defaultValue", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (fallbackPi != null)
+        {
+            try { return fallbackPi.GetValue(paramObj); } catch { }
+        }
+
+        return null;
+    }
 
 
     private static void Generate(VisualEffectAsset vfx)
@@ -517,6 +732,29 @@ public static class RussiaFall
         }
     }
 }
+[Serializable]
+public class ExposedPropertyInfo
+{
+    public string Name;
+    public Type ValueType;
+    public object Value;
+    public object InternalParameter; 
+
+    //public ExposedPropertyInfo() { }
+
+    public ExposedPropertyInfo(string name, Type valueType, object value, object internalRef)
+    {
+        Name = name;
+        ValueType = valueType;
+        Value = value;
+        InternalParameter = internalRef;
+    }
+}
+
+
+//TryGetStringMember(p, "name") ?? TryGetStringMember(p, "m_Name") ?? "<unknown>";
+
+//Debug.Log(name);
 
 //public class VFXURPLitOutputWrapper : UnityEditor.VFX.URP.VFXURPLitOutput { }
 
@@ -557,3 +795,22 @@ public static class RussiaFall
 
 //string enumString = enumTest.ToString();
 //VFXMaker.VFXEnumTest enumTest
+
+//Gets All Exposed Params from a VisualEffectAsset
+//public static VFXParameter[] GetExposedParameters(VisualEffectAsset asset)
+//{
+//    if (asset == null)
+//        return new VFXParameter[0];
+
+//    var graph = asset.GetResource()?.GetOrCreateGraph();
+//    if (graph == null)
+//        return new VFXParameter[0];
+
+//    // Parameters are children of the graph
+//    var parameters = graph.children
+//        .OfType<VFXParameter>()
+//        .Where(p => p.exposed);   // filter only exposed ones
+//        //.ToArray();
+
+//    return (VFXParameter[])parameters;
+//}
