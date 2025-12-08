@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using UnityEditor.Graphs;
 using UnityEditor.VersionControl;
 using UnityEditor.VFX;
@@ -15,16 +16,14 @@ using UnityEngine.VFX;
 /// 
 /// 
 /// TO DO:
-/// 1. Make Preset Emitters (Constant Rate, Burst, Spiral, Gravity)
-/// 2. Extract commonly used code fragments in 1
-/// 3. Enable Users to make Custom Exposed Properties (CEPs)
-/// 4. Enable Users to link CEPs to nodes
-/// 5. Show all CEPs in Window Editor
-/// 6. 
+/// 1. Auto Link Nodes together when spawning individually
+/// 2. Add more behaviour modules
+/// 3. 
+/// 4. 
+/// 5. 
+/// 6. Extract commonly used code fragments
 /// 
-/// INTERMITTENT PLANS
-/// Find out what people like and dont like about Particle System and VFXGraph
-/// Keep the likes and make the nots better
+/// 
 /// 
 /// FUTURE PLANS:
 /// Do Particle System Improvements
@@ -35,14 +34,23 @@ using UnityEngine.VFX;
 public class VFXMaker : EditorWindow
 {
     [System.Serializable]
-    public enum VFXEnumTest
+    public enum VFXOutputEnum
     {
         NONE,
         VFXURPLitMeshOutput,
         VFXURPLitPlanarPrimitiveOutput
     }
 
-    private VFXEnumTest VFXEnum;
+    [System.Serializable]
+    public enum VFXRandomSetting
+    {
+        Off,
+        PerComponent,
+        Uniform
+    }
+
+    private VFXOutputEnum outputEnum;
+    private VFXRandomSetting randomSetting;
     private bool overrule;
 
     private VisualEffectAsset vfx;
@@ -67,6 +75,8 @@ public class VFXMaker : EditorWindow
         vfx = newVFX;
         if (vfx != null) numGraphs = RussiaFall.GetNumGraphs(vfx);
         props.Clear();
+        Refresh();
+        selectedName = null; 
     }
 
     private void OnEnable()
@@ -86,6 +96,13 @@ public class VFXMaker : EditorWindow
 
     private void OnGUI()
     {
+        if (VFXReloadGuard.NeedsRefresh)
+        {
+            return;
+        }
+
+        Refresh();
+
         GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel); 
 
         //Check if field has been changed
@@ -107,7 +124,7 @@ public class VFXMaker : EditorWindow
         //If an Asset is detected
         if (vfx != null)
         {
-            //PRESETS START
+            //PRESETS START ------------------------------------------------------------------------------------------------------------
             GUILayout.BeginHorizontal();
             GUILayout.Label("Presets", EditorStyles.whiteLargeLabel);
 
@@ -123,94 +140,93 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx);
             if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx);
             GUILayout.EndHorizontal();
-            //PRESETS END
+            //PRESETS END ------------------------------------------------------------------------------------------------------------
 
             EditorGUILayout.Separator();
 
-            //MODULES START
+            //MODULES START ------------------------------------------------------------------------------------------------------------
+            
+            //Settings Start
             GUILayout.BeginHorizontal();
             GUILayout.Label("Modules", EditorStyles.whiteLargeLabel);
-
             EditorGUI.BeginChangeCheck();
-            VFXEnum = (VFXEnumTest)EditorGUILayout.EnumFlagsField(VFXEnum);
+            randomSetting = (VFXRandomSetting)EditorGUILayout.EnumFlagsField(randomSetting);
+            outputEnum = (VFXOutputEnum)EditorGUILayout.EnumFlagsField(outputEnum);
             EditorGUI.EndChangeCheck();
-
             GUILayout.EndHorizontal();
+            //Settings End
 
+            //Contexts Start
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Spawn Context")) RussiaFall.SpawnModule(vfx);
             if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
             if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
-            if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, VFXEnum);
+            if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum);
             GUILayout.EndHorizontal();
+            //Contexts End
 
+            //Spawn / Init Start
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Constant Spawn Rate")) RussiaFall.ConstantModule(vfx);
             if (GUILayout.Button("Burst Spawn")) RussiaFall.BurstModule(vfx);
-            if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
-            if (GUILayout.Button("Exposed Float")) RussiaFall.AddFloatProperty(vfx, "hi", 100);
+            if (GUILayout.Button("Velocity")) RussiaFall.VelocityModule(vfx, randomSetting);
+            if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule(vfx, randomSetting);
             GUILayout.EndHorizontal();
-            //MODULES END
+            //Spawn / Init End
 
+            //Update Start
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
+            GUILayout.EndHorizontal();
+            //Update End
+
+            //Output Start
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting);
+            GUILayout.EndHorizontal();
+            //Output End
+
+            //CEP Start
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Exposed Float")) RussiaFall.AddFloatProperty(vfx, "CEPFloat", 100);
+            GUILayout.EndHorizontal();
+            //CEP End
+
+            //MODULES END ------------------------------------------------------------------------------------------------------------
+
+
+            //CEP START ------------------------------------------------------------------------------------------------------------
             EditorGUILayout.Separator();
 
-            GUILayout.Label("Selected Property:");
-            GUILayout.Label(selectedName);
+            if (selectedName != null)
+            {
+                GUILayout.Label("Selected Property:");
+                GUILayout.Label(selectedName);
+            }
+            //CEP END ------------------------------------------------------------------------------------------------------------
 
-
-            if (GUILayout.Button("Refresh"))
-                Refresh();
-
-            //VALUES START
+            //VALUES START ------------------------------------------------------------------------------------------------------------
             EditorGUILayout.LabelField($"Found {props.Count} exposed property(ies):", EditorStyles.boldLabel);
 
-            foreach (var p in props)
+            if (props != null)
             {
-                EditorGUILayout.BeginVertical("box");
-                EditorGUILayout.LabelField(p.Name, EditorStyles.boldLabel);
-
-                object newValue = DrawEditableValueField(p);
-
-                //If value changed => write back to VFX asset
-                if (newValue != null && !Equals(newValue, p.Value))
+                foreach (var p in props)
                 {
-                    RussiaFall.SetExposedValue(vfx, p, newValue);
+                    EditorGUILayout.BeginVertical("box");
+                    EditorGUILayout.LabelField(p.Name, EditorStyles.boldLabel);
+
+                    object newValue = DrawEditableValueField(p);
+
+                    //If value changed => write back to VFX asset
+                    if (newValue != null && !Equals(newValue, p.Value))
+                    {
+                        RussiaFall.SetExposedValue(vfx, p, newValue);
+                    }
+
+                    EditorGUILayout.EndVertical();
                 }
-
-                EditorGUILayout.EndVertical();
             }
-
-
-
-
-
-            //scroll = EditorGUILayout.BeginScrollView(scroll);
-            //foreach (var p in props)
-            //{
-            //    EditorGUILayout.BeginVertical("box");
-            //    EditorGUILayout.LabelField("Name", p.Name);
-            //    EditorGUILayout.LabelField("Type", p.ValueType != null ? p.ValueType.FullName : "<unknown>");
-            //    // Show value nicely depending on type:
-            //    if (p.ValueType == typeof(float) || (p.ValueType == null && p.Value is float))
-            //        EditorGUILayout.LabelField("Value", p.Value.ToString());
-            //    else if (p.ValueType == typeof(int) || (p.ValueType == null && p.Value is int))
-            //        EditorGUILayout.LabelField("Value", p.Value.ToString());
-            //    else if (p.ValueType == typeof(Vector3) || (p.ValueType == null && p.Value is Vector3))
-            //        EditorGUILayout.Vector3Field("Value", (Vector3)(p.Value ?? Vector3.zero));
-            //    else if (p.ValueType == typeof(Color) || (p.ValueType == null && p.Value is Color))
-            //        EditorGUILayout.ColorField("Value", (Color)(p.Value ?? Color.white));
-            //    else if (p.ValueType == typeof(Gradient) || (p.ValueType == null && p.Value is Gradient))
-            //        EditorGUILayout.LabelField("Value", "<Gradient>");
-            //    else if (p.ValueType != null && typeof(UnityEngine.Object).IsAssignableFrom(p.ValueType))
-            //        EditorGUILayout.ObjectField("Value", p.Value as UnityEngine.Object, p.ValueType, false);
-            //    else
-            //        EditorGUILayout.LabelField("Value", p.Value?.ToString() ?? "<null>");
-
-            //    EditorGUILayout.EndVertical();
-            //}
-            //EditorGUILayout.EndScrollView();
-
-            //VALUES END
+            //VALUES END ------------------------------------------------------------------------------------------------------------
         }
 
         EditorGUILayout.Separator();
@@ -274,9 +290,64 @@ public class VFXMaker : EditorWindow
 }
 
 
+public static class VFXReloadGuard
+{
+    public static bool NeedsRefresh { get; private set; }
+
+    [DidReloadScripts]
+    private static void OnReload()
+    {
+        NeedsRefresh = true;
+        EditorApplication.update += WaitOneFrame;
+    }
+
+    private static void WaitOneFrame()
+    {
+        NeedsRefresh = false;
+        EditorApplication.update -= WaitOneFrame;
+    }
+}
 
 
 
+
+
+
+
+
+//if (GUILayout.Button("Constant Spawn Rate")) RussiaFall.ConstantModule(vfx);
+//if (GUILayout.Button("Burst Spawn")) RussiaFall.BurstModule(vfx);
+//if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
+//if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule(vfx, randomSetting);
+
+//if (GUILayout.Button("Refresh"))
+//    Refresh();
+
+//scroll = EditorGUILayout.BeginScrollView(scroll);
+//foreach (var p in props)
+//{
+//    EditorGUILayout.BeginVertical("box");
+//    EditorGUILayout.LabelField("Name", p.Name);
+//    EditorGUILayout.LabelField("Type", p.ValueType != null ? p.ValueType.FullName : "<unknown>");
+//    // Show value nicely depending on type:
+//    if (p.ValueType == typeof(float) || (p.ValueType == null && p.Value is float))
+//        EditorGUILayout.LabelField("Value", p.Value.ToString());
+//    else if (p.ValueType == typeof(int) || (p.ValueType == null && p.Value is int))
+//        EditorGUILayout.LabelField("Value", p.Value.ToString());
+//    else if (p.ValueType == typeof(Vector3) || (p.ValueType == null && p.Value is Vector3))
+//        EditorGUILayout.Vector3Field("Value", (Vector3)(p.Value ?? Vector3.zero));
+//    else if (p.ValueType == typeof(Color) || (p.ValueType == null && p.Value is Color))
+//        EditorGUILayout.ColorField("Value", (Color)(p.Value ?? Color.white));
+//    else if (p.ValueType == typeof(Gradient) || (p.ValueType == null && p.Value is Gradient))
+//        EditorGUILayout.LabelField("Value", "<Gradient>");
+//    else if (p.ValueType != null && typeof(UnityEngine.Object).IsAssignableFrom(p.ValueType))
+//        EditorGUILayout.ObjectField("Value", p.Value as UnityEngine.Object, p.ValueType, false);
+//    else
+//        EditorGUILayout.LabelField("Value", p.Value?.ToString() ?? "<null>");
+
+//    EditorGUILayout.EndVertical();
+//}
+//EditorGUILayout.EndScrollView();
 
 
 //scroll = EditorGUILayout.BeginScrollView(scroll);

@@ -2,10 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
-using Unity.VisualScripting.YamlDotNet.Core;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEditor.VFX;
 using UnityEditor.VFX.Block;
 using UnityEngine;
@@ -398,6 +395,11 @@ public static class RussiaFall
         //Creates Initialize Module
         var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
         graph.AddChild(init);
+
+        var contexts = graph.children.OfType<VFXContext>();
+        var spawn = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
+
+        spawn.LinkTo(init);
     }
 
     //Adds VFX Update Context to the Current VFX Graph
@@ -408,12 +410,17 @@ public static class RussiaFall
         //Creates Update Module
         var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
         graph.AddChild(update);
+
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+
+        init.LinkTo(update);
     }
 
     //Adds VFX Output Context to the Current VFX Graph
-    public static void OutputModule(VisualEffectAsset vfx, VFXMaker.VFXEnumTest VFXEnum)
+    public static void OutputModule(VisualEffectAsset vfx, VFXMaker.VFXOutputEnum VFXEnum)
     {
-        if (VFXEnum == VFXMaker.VFXEnumTest.NONE)
+        if (VFXEnum == VFXMaker.VFXOutputEnum.NONE)
         {
             Debug.LogError("Please Select Output Type!");
             return;
@@ -430,6 +437,11 @@ public static class RussiaFall
 
         var output = ScriptableObject.CreateInstance(type) as VFXContext;
         graph.AddChild(output);
+
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
+
+        update.LinkTo(output);
     }
 
     //Adds Constant Spawner Node to Spawn Context
@@ -468,6 +480,122 @@ public static class RussiaFall
         //Add Gravity
         var gravity = ScriptableObject.CreateInstance<Gravity>();
         update.AddChild(gravity);
+    }
+
+    //Adds Lifetime to the current VFX Graph
+    public static void LifetimeModule(VisualEffectAsset vfx, VFXMaker.VFXRandomSetting randomSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+
+        //Set Velocity Random per Component 
+        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
+
+        //Random Setting
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off) {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
+        {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
+        {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.Uniform);
+        }
+
+        //Random Input
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setLifetime.GetInputSlot(0).value = 10.0f;
+        }
+        else
+        {
+            setLifetime.GetInputSlot(0).value = 1.0f;
+            setLifetime.GetInputSlot(1).value = 10.0f;
+        }
+
+        init.AddChild(setLifetime);
+    }
+
+    //Adds Velocity to the current VFX Graph
+    public static void VelocityModule(VisualEffectAsset vfx, VFXMaker.VFXRandomSetting randomSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+
+        //Set Velocity Random per Component 
+        var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+
+        //Random Setting
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setVelocity.SetSettingValue("Random", Block.RandomMode.Off);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
+        {
+            setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
+        {
+            setVelocity.SetSettingValue("Random", Block.RandomMode.Uniform);
+        }
+
+        //Random Input
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(1, 1.5f, 1));
+        }
+        else
+        {
+            setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
+            setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
+        }
+
+        init.AddChild(setVelocity);
+    }
+
+    //Adds Velocity to the current VFX Graph
+    public static void SizeModule(VisualEffectAsset vfx, VFXMaker.VFXRandomSetting randomSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var output = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //Set Velocity Random per Component 
+        var setSize = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setSize.SetSettingValue("attribute", VFXAttribute.Size.name);
+
+        //Random Setting
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setSize.SetSettingValue("Random", Block.RandomMode.Off);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
+        {
+            setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
+        {
+            setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
+        }
+
+        //Random Input
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setSize.GetInputSlot(0).value = 1.0f;
+        }
+        else
+        {
+            setSize.GetInputSlot(0).value = 1.0f;
+            setSize.GetInputSlot(1).value = 10.0f;
+        }
+
+        output.AddChild(setSize);
     }
 
     //Add Exposed Float Property to the Graph
@@ -541,8 +669,6 @@ public static class RussiaFall
 
             // Type: try property "type" or backing field "m_Type"
             Type valueType = TryGetTypeMember(p, "type") ?? TryGetTypeMember(p, "m_Type");
-
-            Debug.Log(valueType);
 
             // Value: use reflection to get the value. Many VFXParameter implementations expose a "value" property.
             object value = TryGetValueMember(p);
@@ -740,8 +866,6 @@ public class ExposedPropertyInfo
     public object Value;
     public object InternalParameter; 
 
-    //public ExposedPropertyInfo() { }
-
     public ExposedPropertyInfo(string name, Type valueType, object value, object internalRef)
     {
         Name = name;
@@ -751,6 +875,29 @@ public class ExposedPropertyInfo
     }
 }
 
+
+
+
+
+
+
+
+//Set Velocity Random per Component 
+//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
+//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+//setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
+//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
+//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
+//init.AddChild(setVelocity);
+////Add Gravity
+//var gravity = ScriptableObject.CreateInstance<Gravity>();
+//update.AddChild(gravity);
+
+
+//public ExposedPropertyInfo() { }
+
+
+//Debug.Log(valueType);
 
 //TryGetStringMember(p, "name") ?? TryGetStringMember(p, "m_Name") ?? "<unknown>";
 
