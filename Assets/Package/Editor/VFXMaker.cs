@@ -49,8 +49,18 @@ public class VFXMaker : EditorWindow
         Uniform
     }
 
+    [System.Serializable]
+    public enum VFXCompositionSetting
+    {
+        Overwrite,
+        Add,
+        Multiply,
+        Blend
+    }
+
     private VFXOutputEnum outputEnum;
     private VFXRandomSetting randomSetting;
+    private VFXCompositionSetting compositionSetting;
     private bool overrule;
 
     private VisualEffectAsset vfx;
@@ -151,6 +161,7 @@ public class VFXMaker : EditorWindow
             GUILayout.Label("Modules", EditorStyles.whiteLargeLabel);
             EditorGUI.BeginChangeCheck();
             randomSetting = (VFXRandomSetting)EditorGUILayout.EnumFlagsField(randomSetting);
+            compositionSetting = (VFXCompositionSetting)EditorGUILayout.EnumFlagsField(compositionSetting);
             outputEnum = (VFXOutputEnum)EditorGUILayout.EnumFlagsField(outputEnum);
             EditorGUI.EndChangeCheck();
             GUILayout.EndHorizontal();

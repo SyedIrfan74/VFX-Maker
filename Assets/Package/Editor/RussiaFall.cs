@@ -530,6 +530,7 @@ public static class RussiaFall
         //Set Velocity Random per Component 
         var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
         setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+        //setVelocity.SetSettingValue("composition", VFXComposition);
 
         //Random Setting
         if (randomSetting == VFXMaker.VFXRandomSetting.Off)
