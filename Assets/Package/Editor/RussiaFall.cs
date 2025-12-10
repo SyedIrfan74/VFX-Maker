@@ -612,8 +612,8 @@ public static class RussiaFall
         // Create a new VFXParameter of type Float
         var param = ScriptableObject.CreateInstance<VFXParameter>();
         param.Init(typeof(float));             // Parameter Type
-        param.exposed = true;                  // Make it exposed
-        param.exposedName = propertyName;             // Property Name
+        //param.exposed = true;                  // Make it exposed
+        //param.exposedName = propertyName;             // Property Name
 
         // Set default value
         param.value = defaultValue;
