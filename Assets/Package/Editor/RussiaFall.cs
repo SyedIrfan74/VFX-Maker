@@ -599,6 +599,20 @@ public static class RussiaFall
         output.AddChild(setSize);
     }
 
+    //Adds Orient to the current VFX Graph
+    public static void OrientModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var output = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //Set Velocity Random per Component 
+        var orient = ScriptableObject.CreateInstance<Block.Orient>();
+        orient.mode = Orient.Mode.FaceCameraPlane;
+
+        output.AddChild(orient);
+    }
+
     //Add Exposed Float Property to the Graph
     public static void AddFloatProperty(VisualEffectAsset vfx, string propertyName, float defaultValue)
     {
@@ -878,7 +892,30 @@ public class ExposedPropertyInfo
 
 
 
+////Random Setting
+//if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+//{
+//    setSize.SetSettingValue("Random", Block.RandomMode.Off);
+//}
+//if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
+//{
+//    setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
+//}
+//if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
+//{
+//    setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
+//}
 
+////Random Input
+//if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+//{
+//    setSize.GetInputSlot(0).value = 1.0f;
+//}
+//else
+//{
+//    setSize.GetInputSlot(0).value = 1.0f;
+//    setSize.GetInputSlot(1).value = 10.0f;
+//}
 
 
 

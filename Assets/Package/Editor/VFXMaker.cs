@@ -194,6 +194,7 @@ public class VFXMaker : EditorWindow
             //Output Start
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting);
+            if (GUILayout.Button("Orient")) RussiaFall.OrientModule(vfx);
             GUILayout.EndHorizontal();
             //Output End
 
