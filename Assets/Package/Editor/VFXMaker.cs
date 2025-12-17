@@ -36,7 +36,7 @@ public class VFXMaker : EditorWindow
     [System.Serializable]
     public enum VFXOutputEnum
     {
-        NONE,
+        None,
         VFXURPLitMeshOutput,
         VFXURPLitPlanarPrimitiveOutput
     }
@@ -44,18 +44,20 @@ public class VFXMaker : EditorWindow
     [System.Serializable]
     public enum VFXRandomSetting
     {
+        None,
         Off,
         PerComponent,
-        Uniform
+        Uniform,
     }
 
     [System.Serializable]
     public enum VFXCompositionSetting
     {
+        None,
         Overwrite,
         Add,
         Multiply,
-        Blend
+        Blend,
     }
 
     private VFXOutputEnum outputEnum;
@@ -101,6 +103,7 @@ public class VFXMaker : EditorWindow
     void OnParamSelected(VFXParameter p)
     {
         selectedName = p.exposedName;
+        p.exposedName = "hah";
         Repaint();
     }
 
@@ -160,9 +163,9 @@ public class VFXMaker : EditorWindow
             GUILayout.BeginHorizontal();
             GUILayout.Label("Modules", EditorStyles.whiteLargeLabel);
             EditorGUI.BeginChangeCheck();
-            randomSetting = (VFXRandomSetting)EditorGUILayout.EnumFlagsField(randomSetting);
-            compositionSetting = (VFXCompositionSetting)EditorGUILayout.EnumFlagsField(compositionSetting);
-            outputEnum = (VFXOutputEnum)EditorGUILayout.EnumFlagsField(outputEnum);
+            randomSetting = (VFXRandomSetting)EditorGUILayout.EnumPopup(randomSetting);
+            compositionSetting = (VFXCompositionSetting)EditorGUILayout.EnumPopup(compositionSetting);
+            outputEnum = (VFXOutputEnum)EditorGUILayout.EnumPopup(outputEnum);
             EditorGUI.EndChangeCheck();
             GUILayout.EndHorizontal();
             //Settings End
@@ -181,7 +184,7 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Constant Spawn Rate")) RussiaFall.ConstantModule(vfx);
             if (GUILayout.Button("Burst Spawn")) RussiaFall.BurstModule(vfx);
             if (GUILayout.Button("Velocity")) RussiaFall.VelocityModule(vfx, randomSetting);
-            if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule(vfx, randomSetting);
+            if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule1(vfx, randomSetting, compositionSetting);
             GUILayout.EndHorizontal();
             //Spawn / Init End
 
@@ -214,6 +217,13 @@ public class VFXMaker : EditorWindow
             {
                 GUILayout.Label("Selected Property:");
                 GUILayout.Label(selectedName);
+
+                EditorGUI.BeginChangeCheck();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    selectedName = GUILayout.TextField(selectedName);
+                    //RussiaFall.SetExposedName();
+                }
             }
             //CEP END ------------------------------------------------------------------------------------------------------------
 

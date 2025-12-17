@@ -420,11 +420,11 @@ public static class RussiaFall
     //Adds VFX Output Context to the Current VFX Graph
     public static void OutputModule(VisualEffectAsset vfx, VFXMaker.VFXOutputEnum VFXEnum)
     {
-        if (VFXEnum == VFXMaker.VFXOutputEnum.NONE)
-        {
-            Debug.LogError("Please Select Output Type!");
-            return;
-        }
+        //if (VFXEnum == VFXMaker.VFXOutputEnum.NONE)
+        //{
+        //    Debug.LogError("Please Select Output Type!");
+        //    return;
+        //}
 
         var graph = vfx.GetResource()?.GetOrCreateGraph();
 
@@ -495,6 +495,62 @@ public static class RussiaFall
 
         //Random Setting
         if (randomSetting == VFXMaker.VFXRandomSetting.Off) {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
+        {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        }
+        if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
+        {
+            setLifetime.SetSettingValue("Random", Block.RandomMode.Uniform);
+        }
+
+        //Random Input
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
+            setLifetime.GetInputSlot(0).value = 10.0f;
+        }
+        else
+        {
+            setLifetime.GetInputSlot(0).value = 1.0f;
+            setLifetime.GetInputSlot(1).value = 10.0f;
+        }
+
+        init.AddChild(setLifetime);
+    }
+
+    //Adds Lifetime to the current VFX Graph
+    public static void LifetimeModule1(VisualEffectAsset vfx, VFXMaker.VFXRandomSetting randomSetting, VFXMaker.VFXCompositionSetting compositionSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
+
+        //Set Velocity Random per Component 
+        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
+
+        if (compositionSetting == VFXMaker.VFXCompositionSetting.Overwrite)
+        {
+            setLifetime.Composition = AttributeCompositionMode.Overwrite;
+        }
+        if (compositionSetting == VFXMaker.VFXCompositionSetting.Blend)
+        {
+            setLifetime.Composition = AttributeCompositionMode.Blend;
+        }
+        if (compositionSetting == VFXMaker.VFXCompositionSetting.Multiply)
+        {
+            setLifetime.Composition = AttributeCompositionMode.Multiply;
+        }
+        if (compositionSetting == VFXMaker.VFXCompositionSetting.Add)
+        {
+            setLifetime.Composition = AttributeCompositionMode.Add;
+        }
+
+        //Random Setting
+        if (randomSetting == VFXMaker.VFXRandomSetting.Off)
+        {
             setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
         }
         if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
@@ -695,6 +751,34 @@ public static class RussiaFall
     }
 
     public static void SetExposedValue(VisualEffectAsset asset, ExposedPropertyInfo info, object newValue)
+    {
+        if (info.InternalParameter == null)
+            return;
+
+        var param = info.InternalParameter;
+        var t = param.GetType();
+
+        // Assign to "value" property via reflection
+        var pi = t.GetProperty("value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (pi != null && pi.CanWrite)
+        {
+            pi.SetValue(param, newValue);
+        }
+        else
+        {
+            // try fallback "m_Value" field
+            var fi = t.GetField("m_Value", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fi != null)
+                fi.SetValue(param, newValue);
+        }
+
+        info.Value = newValue;
+
+        // Reimport to apply changes
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
+    }
+
+    public static void SetExposedName(VisualEffectAsset asset, ExposedPropertyInfo info, object newValue)
     {
         if (info.InternalParameter == null)
             return;
