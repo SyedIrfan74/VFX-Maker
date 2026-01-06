@@ -222,6 +222,7 @@ public static class RussiaFall
 
         //Creates Initialize Module
         var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
+        init.SetSettingValue("capacity", 1024u);
         graph.AddChild(init);
 
         var contexts = graph.children.OfType<VFXContext>();
@@ -352,6 +353,8 @@ public static class RussiaFall
         var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
         constantRate.GetInputSlot(0).value = 32.0f;
         spawn.AddChild(constantRate);
+
+        AddFloatProperty(vfx, 32.0f);
     }
 
     //Adds Burst Spawner Node to Spawn Context
@@ -365,51 +368,8 @@ public static class RussiaFall
         var burst = ScriptableObject.CreateInstance<VFXSpawnerBurst>();
         burst.GetInputSlot(0).value = 32.0f;
         spawn.AddChild(burst);
-    }
 
-    //Adds gravity to the current VFX Graph
-    public static void GravityModule(VisualEffectAsset vfx)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
-    }
-
-    //Adds Lifetime to the current VFX Graph
-    public static void LifetimeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-
-        //Set Velocity Random per Component 
-        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-
-        //Random Setting
-        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
-        if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
-        if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setLifetime.SetSettingValue("Random", Block.RandomMode.Uniform);
-
-        //Random Input
-        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setLifetime.GetInputSlot(0).value = 10.0f;
-        else
-        {
-            setLifetime.GetInputSlot(0).value = 1.0f;
-            setLifetime.GetInputSlot(1).value = 10.0f;
-        }
-
-        //Composition setting
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setLifetime.Composition = AttributeCompositionMode.Overwrite;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend) setLifetime.Composition = AttributeCompositionMode.Blend;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setLifetime.Composition = AttributeCompositionMode.Multiply;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setLifetime.Composition = AttributeCompositionMode.Add;
-
-        init.AddChild(setLifetime);
+        AddFloatProperty(vfx, 32.0f);
     }
 
     //Adds Velocity to the current VFX Graph
@@ -429,11 +389,17 @@ public static class RussiaFall
         if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setVelocity.SetSettingValue("Random", Block.RandomMode.Uniform);
 
         //Random Input
-        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(1, 1.5f, 1));
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off)
+        {
+            setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(1, 1.5f, 1));
+            AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
+        }
         else
         {
             setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
             setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
+            AddVector3Property(vfx, new Vector3(-1, 0, -1));
+            AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
         }
 
         //Composition setting
@@ -443,6 +409,59 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setVelocity.Composition = AttributeCompositionMode.Add;
         
         init.AddChild(setVelocity);
+    }
+
+    //Adds Lifetime to the current VFX Graph
+    public static void LifetimeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+        //Set Velocity Random per Component 
+        var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
+
+        //Random Setting
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
+        if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setLifetime.SetSettingValue("Random", Block.RandomMode.Uniform);
+
+        //Random Input
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off)
+        {
+            setLifetime.GetInputSlot(0).value = 10.0f;
+            AddFloatProperty(vfx, 10.0f);
+        }
+        else
+        {
+            setLifetime.GetInputSlot(0).value = 1.0f;
+            setLifetime.GetInputSlot(1).value = 10.0f;
+            AddFloatProperty(vfx, 1.0f);
+            AddFloatProperty(vfx, 10.0f);
+        }
+
+        //Composition setting
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setLifetime.Composition = AttributeCompositionMode.Overwrite;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend) setLifetime.Composition = AttributeCompositionMode.Blend;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setLifetime.Composition = AttributeCompositionMode.Multiply;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setLifetime.Composition = AttributeCompositionMode.Add;
+
+        init.AddChild(setLifetime);
+    }
+
+    //Adds gravity to the current VFX Graph
+    public static void GravityModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+
+        AddVector3Property(vfx, new Vector3(0, -9.81f, 0));
     }
 
     //Adds Velocity to the current VFX Graph
@@ -457,28 +476,22 @@ public static class RussiaFall
         setSize.SetSettingValue("attribute", VFXAttribute.Size.name);
 
         //Random Setting
-        if (randomSetting == VFXEnum.VFXRandomSetting.Off)
-        {
-            setSize.SetSettingValue("Random", Block.RandomMode.Off);
-        }
-        if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent)
-        {
-            setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
-        }
-        if (randomSetting == VFXEnum.VFXRandomSetting.Uniform)
-        {
-            setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
-        }
-
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setSize.SetSettingValue("Random", Block.RandomMode.Off);
+        if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
+        
         //Random Input
         if (randomSetting == VFXEnum.VFXRandomSetting.Off)
         {
             setSize.GetInputSlot(0).value = 1.0f;
+            AddFloatProperty(vfx, 1.0f);
         }
         else
         {
             setSize.GetInputSlot(0).value = 1.0f;
             setSize.GetInputSlot(1).value = 10.0f;
+            AddFloatProperty(vfx, 1.0f);
+            AddFloatProperty(vfx, 10.0f);
         }
 
         output.AddChild(setSize);
@@ -491,7 +504,7 @@ public static class RussiaFall
         var contexts = graph.children.OfType<VFXContext>();
         var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
 
-        //Set Velocity Random per Component 
+        //Orient 
         var orient = ScriptableObject.CreateInstance<Block.Orient>();
         orient.mode = Orient.Mode.FaceCameraPlane;
 
@@ -508,6 +521,8 @@ public static class RussiaFall
         var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
         setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
         output.AddChild(setColor);
+
+        AddColorProperty(vfx, new Color(1, 1, 1));
     }
 
     //Add Exposed Float Property to the Graph
@@ -534,6 +549,9 @@ public static class RussiaFall
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(vfx));
+
+        graph.Invalidate(VFXModel.InvalidationCause.kStructureChanged);
+        UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
     }
 
     //Add Exposed Int Property to the Graph
@@ -625,8 +643,6 @@ public static class RussiaFall
         return graph.children.OfType<VFXContext>().Count(c => c.contextType == VFXContextType.Spawner);
     }
 
-    
-
     public static List<ExposedPropertyInfo> GetExposedProperties(VisualEffectAsset vfx)
     {
         var results = new List<ExposedPropertyInfo>();
@@ -696,52 +712,6 @@ public static class RussiaFall
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
     }
 
-    public static void SetExposedName(VisualEffectAsset asset, ExposedPropertyInfo info, object newValue)
-    {
-        if (info.InternalParameter == null)
-            return;
-
-        var param = info.InternalParameter;
-        var t = param.GetType();
-
-        // Assign to "value" property via reflection
-        var pi = t.GetProperty("value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (pi != null && pi.CanWrite)
-        {
-            pi.SetValue(param, newValue);
-        }
-        else
-        {
-            // try fallback "m_Value" field
-            var fi = t.GetField("m_Value", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (fi != null)
-                fi.SetValue(param, newValue);
-        }
-
-        info.Value = newValue;
-
-        // Reimport to apply changes
-        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
-    }
-
-    private static string TryGetStringMember(object obj, string memberName)
-    {
-        var t = obj.GetType();
-        var pi = t.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-        //Debug.Log(pi);
-        if (pi != null)
-        {
-            try { var v = pi.GetValue(obj); return v?.ToString(); } catch { }
-        }
-        var fi = t.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (fi != null)
-        {
-            try { var v = fi.GetValue(obj); return v?.ToString(); } catch { }
-        }
-        return null;
-    }
-
     private static Type TryGetTypeMember(object obj, string memberName)
     {
         var t = obj.GetType();
@@ -802,77 +772,6 @@ public static class RussiaFall
         }
 
         return null;
-    }
-
-
-    private static void Generate(VisualEffectAsset vfx)
-    {
-        if (vfx != null)
-        {
-            Debug.Log("REGENERATE VFX");
-            float kContextOffset = 400.0f;
-
-            var graph = vfx.GetResource()?.GetOrCreateGraph();
-            graph.RemoveAllChildren();
-
-            var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
-            spawner.label = UnityEngine.Random.Range(0, 10000).ToString();
-            spawner.position = new Vector2(0, 0);
-
-            var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
-            constantRate.GetInputSlot(0).value = 32.0f;
-            spawner.AddChild(constantRate);
-
-            var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
-            init.SetSettingValue("capacity", 1024u);
-            init.label = UnityEngine.Random.Range(0, 10000).ToString();
-            init.position = new Vector2(0, kContextOffset);
-
-            var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-            setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-            setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
-            setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-            setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-            init.AddChild(setVelocity);
-
-            var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
-            update.label = UnityEngine.Random.Range(0, 10000).ToString();
-            update.position = new Vector2(0, kContextOffset * 2);
-
-            var gravity = ScriptableObject.CreateInstance<Block.Gravity>();
-            gravity.GetInputSlot(0).value = (Vector)(new Vector3(0, -1, 0));
-            update.AddChild(gravity);
-
-            //var collider = ScriptableObject.CreateInstance<CollisionPlane>();
-            //collider.GetInputSlot(1).value = UnityEngine.Random.Range(0.25f, 0.75f); // bounce
-            //collider.GetInputSlot(2).value = UnityEngine.Random.Range(0.05f, 0.25f); // friction
-            //update.AddChild(collider);
-
-            var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
-            output.label = UnityEngine.Random.Range(0, 10000).ToString();
-            output.position = new Vector2(0, kContextOffset * 3);
-
-            var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-            setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-            output.AddChild(setColor);
-
-            var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-            hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-            hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-            hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-            spawner.LinkTo(init);
-            init.LinkTo(update);
-            update.LinkTo(output);
-
-            graph.AddChild(spawner);
-            graph.AddChild(init);
-            graph.AddChild(update);
-            graph.AddChild(output);
-            graph.AddChild(hsvColor);
-
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(vfx.GetResource()));
-        }
     }
 }
 

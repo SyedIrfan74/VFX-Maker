@@ -61,26 +61,6 @@ public class VFXMaker : EditorWindow
         newName = null; 
     }
 
-    private void Update()
-    {
-        //if (CEPs != null)
-        //{
-        //    foreach (var p in CEPs)
-        //    {
-        //        EditorGUILayout.BeginVertical("box");
-        //        object newValue = DrawEditableValueField(p);
-
-        //        //If value changed => write back to VFX asset
-        //        if (newValue != null && !Equals(newValue, p.Value))
-        //        {
-        //            RussiaFall.SetExposedValue(vfx, p, newValue);
-        //        }
-
-        //        EditorGUILayout.EndVertical();
-        //    }
-        //}
-    }
-
     private void OnGUI()
     {
         RefreshCEP();
@@ -213,21 +193,20 @@ public class VFXMaker : EditorWindow
             //VALUES START ------------------------------------------------------------------------------------------------------------
             EditorGUILayout.LabelField($"Found {CEPs.Count} exposed property(ies):", EditorStyles.boldLabel);
 
-            if (CEPs != null)
+            if (CEPs == null) return;
+            
+            foreach (var p in CEPs)
             {
-                foreach (var p in CEPs)
+                EditorGUILayout.BeginVertical("box");
+                object newValue = DrawEditableValueField(p);
+
+                //If value changed => write back to VFX asset
+                if (newValue != null && !Equals(newValue, p.Value))
                 {
-                    EditorGUILayout.BeginVertical("box");
-                    object newValue = DrawEditableValueField(p);
-
-                    //If value changed => write back to VFX asset
-                    if (newValue != null && !Equals(newValue, p.Value))
-                    {
-                        RussiaFall.SetExposedValue(vfx, p, newValue);
-                    }
-
-                    EditorGUILayout.EndVertical();
+                    RussiaFall.SetExposedValue(vfx, p, newValue);
                 }
+
+                EditorGUILayout.EndVertical();
             }
             //VALUES END ------------------------------------------------------------------------------------------------------------
         }
