@@ -1,6 +1,5 @@
 using UnityEditor;
 using UnityEditor.VFX;
-using UnityEngine;
 
 [InitializeOnLoad]
 static class InspectorWatcher
@@ -24,23 +23,3 @@ static class InspectorWatcher
         }
     }
 }
-
-
-
-
-
-//public class inspectorWatcher : MonoBehaviour
-//{
-//    // Start is called once before the first execution of Update after the MonoBehaviour is created
-//    void Start()
-//    {
-
-//    }
-
-//    // Update is called once per frame
-//    void Update()
-//    {
-
-//    }
-//}
-
