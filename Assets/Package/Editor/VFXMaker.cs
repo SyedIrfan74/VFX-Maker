@@ -71,7 +71,7 @@ public class VFXMaker : EditorWindow
 
         if (haha == null) haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath + "/" + textureName);
 
-        Debug.Log(haha);
+        Debug.Log(haha.name);
     }
 
     private void OnGUI()
