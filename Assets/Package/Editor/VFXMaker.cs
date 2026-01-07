@@ -37,7 +37,7 @@ public class VFXMaker : EditorWindow
 
     private Texture2D haha = null;
     private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures";
-    private string textureName = "Star 5";
+    private string textureName = "Star";
 
 
     [MenuItem("Window/VFXMaker")]
