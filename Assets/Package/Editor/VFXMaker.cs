@@ -35,8 +35,8 @@ public class VFXMaker : EditorWindow
 
     private Vector2 scroll;
 
-    private Texture2D haha = null;
-    private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+    //private Texture2D haha = null;
+    //private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
 
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
@@ -44,17 +44,17 @@ public class VFXMaker : EditorWindow
         GetWindow<VFXMaker>();
     }
 
-    [MenuItem("Tools/Test Load Package Texture")]
-    static void TestLoad()
-    {
-        string path = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+    //[MenuItem("Tools/Test Load Package Texture")]
+    //static void TestLoad()
+    //{
+    //    string path = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
 
-        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    //    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
 
-        Debug.Log(tex != null
-            ? "Loaded texture: " + tex.name
-            : "FAILED to load texture at: " + path);
-    }
+    //    Debug.Log(tex != null
+    //        ? "Loaded texture: " + tex.name
+    //        : "FAILED to load texture at: " + path);
+    //}
 
     private void OnEnable()
     {
@@ -79,9 +79,9 @@ public class VFXMaker : EditorWindow
         RefreshCEP();
         newName = null; 
 
-        if (haha == null) haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+        //haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
 
-        Debug.Log(haha);
+        //Debug.Log(haha);
     }
 
     private void OnGUI()
@@ -157,7 +157,7 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
             if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
             if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum, 400);
-            if (GUILayout.Button("Output 2 Context")) RussiaFall.Output2Module(vfx, outputEnum, haha);
+            //if (GUILayout.Button("Output 2 Context")) RussiaFall.Output2Module(vfx, outputEnum, haha);
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
             //Contexts End
@@ -179,6 +179,7 @@ public class VFXMaker : EditorWindow
             GUILayout.Label("Update", EditorStyles.whiteLargeLabel);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
+            if (GUILayout.Button("testingshit")) RussiaFall.testingshit(vfx);
             if (GUILayout.Button("Trigger Event On Die")) RussiaFall.TriggerEventModule(vfx);
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
@@ -304,8 +305,19 @@ public class VFXMaker : EditorWindow
 
 
 
+//enum Tab
+//{
+//    Overview,
+//    Properties,
+//    Debug
+//}
 
+//Tab currentTab;
+//currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new[] { "Overview", "Properties", "Debug"});
 
+//GUILayout.Space(10);
+
+//var testHAHA = (Texture2D)EditorGUILayout.ObjectField(haha, typeof(Texture2D), true);
 
 
 

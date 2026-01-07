@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -20,6 +21,8 @@ using Operator = UnityEditor.VFX.Operator;
 
 public static class RussiaFall
 {
+    private static string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+
     //Creates new VisualEffectAsset in designated file path with specified name
     public static VisualEffectAsset CreateVFXAsset(string path, string newAssetName, VisualEffectAsset vfx)
     {
@@ -250,6 +253,29 @@ public static class RussiaFall
         init.LinkTo(update);
     }
 
+    public static void testingshit(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+        var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
+
+        EditorApplication.delayCall += () =>
+        {
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+
+            if (texture != null) slot.value = texture;
+            else Debug.Log("Yea this aint working");
+
+            if (slot == null) Debug.Log("slot also not working bud");
+            else Debug.Log("nah this works");
+
+            graph.RecompileIfNeeded();
+            EditorUtility.SetDirty(vfx);
+        };
+    }
+
     //Adds VFX Output Context to the Current VFX Graph
     public static void OutputModule(VisualEffectAsset vfx, VFXEnum.VFXOutputEnum VFXEnum, float gapAmount = 400)
     {
@@ -265,8 +291,14 @@ public static class RussiaFall
             update.LinkTo(output);
             graph.AddChild(output);
 
-            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
-            //slot.value = tex
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+
+            if (texture != null) slot.value = texture;
+            else Debug.Log("Yea this aint working");
+
+            if (slot == null) Debug.Log("slot also not working bud");
+            else Debug.Log("nah this works");
         }
 
         //Creates Unlit Mesh Output Context
@@ -866,24 +898,24 @@ public static class RussiaFall
 
 
     //Adds VFX Output Context to the Current VFX Graph
-    public static void Output2Module(VisualEffectAsset vfx, VFXEnum.VFXOutputEnum VFXEnum, Texture2D texture, float gapAmount = 400)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+    //public static void Output2Module(VisualEffectAsset vfx, VFXEnum.VFXOutputEnum VFXEnum, Texture2D texture, float gapAmount = 400)
+    //{
+    //    var graph = vfx.GetResource()?.GetOrCreateGraph();
+    //    var contexts = graph.children.OfType<VFXContext>();
+    //    var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
 
-        //Creates Unlit Quad Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
-        {
-            var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
-            graph.AddChild(output);
+    //    //Creates Unlit Quad Output Context
+    //    if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
+    //    {
+    //        var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
+    //        output.position = new Vector2(update.position.x, gapAmount * 3);
+    //        update.LinkTo(output);
+    //        graph.AddChild(output);
 
-            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
-            slot.value = texture;
-        }
-    }
+    //        var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
+    //        slot.value = texture;
+    //    }
+    //}
 
 
 }
