@@ -58,7 +58,7 @@ public class VFXMaker : EditorWindow
     {
         if (newName == null) return;
 
-        p.exposedName = newName;
+        //p.exposedName = newName;
         newName = null;
         Repaint();
     }
