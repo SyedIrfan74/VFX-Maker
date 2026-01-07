@@ -36,7 +36,7 @@ public class VFXMaker : EditorWindow
     private Vector2 scroll;
 
     private Texture2D haha = null;
-    private string texturePath = "Packages/VFX Maker/Textures";
+    private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures";
     private string textureName = "Star.png";
 
     [MenuItem("Window/VFXMaker")]
