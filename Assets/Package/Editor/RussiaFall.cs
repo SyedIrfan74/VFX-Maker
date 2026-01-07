@@ -264,6 +264,9 @@ public static class RussiaFall
             output.position = new Vector2(update.position.x, gapAmount * 3);
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
+            //slot.value = tex
         }
 
         //Creates Unlit Mesh Output Context
@@ -450,7 +453,7 @@ public static class RussiaFall
         init.AddChild(setLifetime);
     }
 
-    //Adds gravity to the current VFX Graph
+    //Adds Gravity to the current VFX Graph
     public static void GravityModule(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
@@ -464,8 +467,21 @@ public static class RussiaFall
         AddVector3Property(vfx, new Vector3(0, -9.81f, 0));
     }
 
-    //Adds Velocity to the current VFX Graph
-    public static void SizeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting)
+    //Adds Trigger Event to the current VFX Graph
+    public static void TriggerEventModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Add Gravity
+        var triggerEvent = ScriptableObject.CreateInstance<TriggerEvent>();
+        triggerEvent.SetSettingValue("mode", TriggerEvent.Mode.OnDie);
+        update.AddChild(triggerEvent);
+    }
+
+    //Adds Size to the current VFX Graph
+    public static void SizeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
@@ -494,7 +510,79 @@ public static class RussiaFall
             AddFloatProperty(vfx, 10.0f);
         }
 
+        //Composition setting
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setSize.Composition = AttributeCompositionMode.Overwrite;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend) setSize.Composition = AttributeCompositionMode.Blend;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setSize.Composition = AttributeCompositionMode.Multiply;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setSize.Composition = AttributeCompositionMode.Add;
+
         output.AddChild(setSize);
+    }
+
+    //Adds Scale to the current VFX Graph
+    public static void ScaleModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //Set Velocity Random per Component 
+        var setScale = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setScale.SetSettingValue("attribute", VFXAttribute.scale.name);
+
+        //Random Setting
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off) setScale.SetSettingValue("Random", Block.RandomMode.Off);
+        if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setScale.SetSettingValue("Random", Block.RandomMode.PerComponent);
+        if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setScale.SetSettingValue("Random", Block.RandomMode.Uniform);
+
+        //Random Input
+        if (randomSetting == VFXEnum.VFXRandomSetting.Off)
+        {
+            setScale.GetInputSlot(0).value = new Vector3(1, 1, 1);
+            AddVector3Property(vfx, new Vector3(1, 1, 1));
+        }
+        else
+        {
+            setScale.GetInputSlot(0).value = new Vector3(1, 1, 1);
+            setScale.GetInputSlot(1).value = new Vector3(10, 10, 10);
+            AddVector3Property(vfx, new Vector3(1, 1, 1));
+            AddVector3Property(vfx, new Vector3(10, 10, 10));
+        }
+
+        //Composition setting
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setScale.Composition = AttributeCompositionMode.Overwrite;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend) setScale.Composition = AttributeCompositionMode.Blend;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setScale.Composition = AttributeCompositionMode.Multiply;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setScale.Composition = AttributeCompositionMode.Add;
+
+        output.AddChild(setScale);
+    }
+
+    //Adds Scale to the current VFX Graph
+    public static void OverLifeModule(VisualEffectAsset vfx, VFXEnum.VFXAttributes attribute, VFXEnum.VFXCompositionSetting compositionSetting)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+        //Set Velocity Random per Component 
+        var setScale = ScriptableObject.CreateInstance<Block.AttributeFromCurve>();
+
+        if (attribute == VFXEnum.VFXAttributes.position) setScale.SetSettingValue("attribute", VFXAttribute.Position.name);
+        if (attribute == VFXEnum.VFXAttributes.velocity) setScale.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+        if (attribute == VFXEnum.VFXAttributes.color) setScale.SetSettingValue("attribute", VFXAttribute.Color.name);
+        if (attribute == VFXEnum.VFXAttributes.alpha) setScale.SetSettingValue("attribute", VFXAttribute.Alpha.name);
+        if (attribute == VFXEnum.VFXAttributes.size) setScale.SetSettingValue("attribute", VFXAttribute.Size.name);
+        if (attribute == VFXEnum.VFXAttributes.scale) setScale.SetSettingValue("attribute", VFXAttribute.scale.name);
+        if (attribute == VFXEnum.VFXAttributes.angle) setScale.SetSettingValue("attribute", VFXAttribute.angle.name);
+
+        //Composition setting
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setScale.Composition = AttributeCompositionMode.Overwrite;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend) setScale.Composition = AttributeCompositionMode.Blend;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setScale.Composition = AttributeCompositionMode.Multiply;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setScale.Composition = AttributeCompositionMode.Add;
+
+        output.AddChild(setScale);
     }
 
     //Adds Orient to the current VFX Graph
@@ -773,6 +861,31 @@ public static class RussiaFall
 
         return null;
     }
+
+
+
+
+    //Adds VFX Output Context to the Current VFX Graph
+    public static void Output2Module(VisualEffectAsset vfx, VFXEnum.VFXOutputEnum VFXEnum, Texture2D texture, float gapAmount = 400)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        //Creates Unlit Quad Output Context
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
+        {
+            var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
+            output.position = new Vector2(update.position.x, gapAmount * 3);
+            update.LinkTo(output);
+            graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
+            slot.value = texture;
+        }
+    }
+
+
 }
 
 

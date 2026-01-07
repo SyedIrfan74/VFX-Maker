@@ -1,3 +1,4 @@
+using NUnit.Framework.Constraints;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.VFX;
@@ -27,9 +28,17 @@ public class VFXMaker : EditorWindow
     private VFXEnum.VFXOutputEnum outputEnum;
     private VFXEnum.VFXRandomSetting randomSetting;
     private VFXEnum.VFXCompositionSetting compositionSetting;
+    private VFXEnum.VFXAttributes attribute;
 
     private List<ExposedPropertyInfo> CEPs = new List<ExposedPropertyInfo>();
     private string newName;
+
+    private Vector2 scroll;
+
+    private Texture2D haha = null;
+    private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures";
+    private string textureName = "Star 5";
+
 
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
@@ -59,6 +68,10 @@ public class VFXMaker : EditorWindow
         vfx = newVFX;
         RefreshCEP();
         newName = null; 
+
+        if (haha == null) haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath + "/" + textureName);
+
+        Debug.Log(haha);
     }
 
     private void OnGUI()
@@ -88,6 +101,8 @@ public class VFXMaker : EditorWindow
         //If an Asset is detected
         if (vfx != null)
         {
+            scroll = EditorGUILayout.BeginScrollView(scroll);
+
             //PRESETS START ------------------------------------------------------------------------------------------------------------
             EditorGUILayout.BeginVertical("box");
             GUILayout.BeginHorizontal();
@@ -119,6 +134,7 @@ public class VFXMaker : EditorWindow
             randomSetting = (VFXEnum.VFXRandomSetting)EditorGUILayout.EnumPopup(randomSetting);
             compositionSetting = (VFXEnum.VFXCompositionSetting)EditorGUILayout.EnumPopup(compositionSetting);
             outputEnum = (VFXEnum.VFXOutputEnum)EditorGUILayout.EnumPopup(outputEnum);
+            attribute = (VFXEnum.VFXAttributes)EditorGUILayout.EnumPopup(attribute);
             EditorGUI.EndChangeCheck();
             GUILayout.EndHorizontal();
             //Settings End
@@ -131,6 +147,7 @@ public class VFXMaker : EditorWindow
             if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
             if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
             if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum, 400);
+            if (GUILayout.Button("Output 2 Context")) RussiaFall.Output2Module(vfx, outputEnum, haha);
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
             //Contexts End
@@ -152,6 +169,7 @@ public class VFXMaker : EditorWindow
             GUILayout.Label("Update", EditorStyles.whiteLargeLabel);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
+            if (GUILayout.Button("Trigger Event On Die")) RussiaFall.TriggerEventModule(vfx);
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
             //Update End
@@ -160,7 +178,9 @@ public class VFXMaker : EditorWindow
             EditorGUILayout.BeginVertical("box");
             GUILayout.Label("Output", EditorStyles.whiteLargeLabel);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting);
+            if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting, compositionSetting);
+            if (GUILayout.Button("Scale")) RussiaFall.ScaleModule(vfx, randomSetting, compositionSetting);
+            if (GUILayout.Button("Over Life")) RussiaFall.OverLifeModule(vfx, attribute, compositionSetting);
             if (GUILayout.Button("Orient")) RussiaFall.OrientModule(vfx);
             GUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
@@ -209,6 +229,7 @@ public class VFXMaker : EditorWindow
                 EditorGUILayout.EndVertical();
             }
             //VALUES END ------------------------------------------------------------------------------------------------------------
+            EditorGUILayout.EndScrollView();
         }
 
         EditorGUILayout.Separator();

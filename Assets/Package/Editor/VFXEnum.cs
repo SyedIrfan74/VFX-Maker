@@ -29,4 +29,31 @@ public class VFXEnum
         Multiply,
         Blend,
     }
+
+    [System.Serializable]
+    public enum VFXAttributes
+    {
+        position,
+        velocity,
+        color,
+        alpha,
+        size,
+        scale,
+        angle
+
+        //oldPosition,
+        //direction,
+        //lifetime, 
+        //age,
+        //texIndex,
+        //meshIndex,
+        //axisX,
+        //axisY,
+        //axisZ,
+        //alive,
+        //mass,
+        //targetpostiion,
+        //angularVelocity,
+        //pivot,
+    }
 }
