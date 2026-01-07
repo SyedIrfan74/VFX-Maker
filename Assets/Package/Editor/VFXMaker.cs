@@ -36,7 +36,7 @@ public class VFXMaker : EditorWindow
     private Vector2 scroll;
 
     private Texture2D haha = null;
-    private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures";
+    private string texturePath = "Packages/VFX Maker/Textures";
     private string textureName = "Star";
 
 
@@ -71,7 +71,7 @@ public class VFXMaker : EditorWindow
 
         if (haha == null) haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath + "/" + textureName);
 
-        Debug.Log(haha.name);
+        Debug.Log(haha);
     }
 
     private void OnGUI()
