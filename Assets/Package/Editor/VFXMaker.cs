@@ -44,6 +44,18 @@ public class VFXMaker : EditorWindow
         GetWindow<VFXMaker>();
     }
 
+    [MenuItem("Tools/Test Load Package Texture")]
+    static void TestLoad()
+    {
+        string path = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+        Debug.Log(tex != null
+            ? "Loaded texture: " + tex.name
+            : "FAILED to load texture at: " + path);
+    }
+
     private void OnEnable()
     {
         InspectorWatcher.OnParameterSelected += OnParamSelected;
