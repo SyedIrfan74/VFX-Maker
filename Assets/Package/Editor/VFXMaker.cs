@@ -37,8 +37,7 @@ public class VFXMaker : EditorWindow
 
     private Texture2D haha = null;
     private string texturePath = "Packages/VFX Maker/Textures";
-    private string textureName = "Star";
-
+    private string textureName = "Star.png";
 
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
