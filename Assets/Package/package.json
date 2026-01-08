@@ -1,6 +1,6 @@
 {
   "name": "com.github.syedirfan74.vfxmaker",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "displayName": "VFX Maker",
   "description": "Simple to use VFX Maker to help learn and master VFX Graph",
   "unity": "6000.0",
