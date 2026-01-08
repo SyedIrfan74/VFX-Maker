@@ -1,7 +1,7 @@
-using NUnit.Framework.Constraints;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.VFX;
+using UnityEditor.VFX.UI;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -24,6 +24,7 @@ public class VFXMaker : EditorWindow
     private string newAssetName;
 
     private bool overrule;
+    private bool addCEPs;
 
     private VFXEnum.VFXOutputEnum outputEnum;
     private VFXEnum.VFXRandomSetting randomSetting;
@@ -31,12 +32,8 @@ public class VFXMaker : EditorWindow
     private VFXEnum.VFXAttributes attribute;
 
     private List<ExposedPropertyInfo> CEPs = new List<ExposedPropertyInfo>();
-    private string newName;
 
     private Vector2 scroll;
-
-    //private Texture2D haha = null;
-    //private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
 
     [MenuItem("Window/VFXMaker")]
     static void OpenWindow()
@@ -44,58 +41,225 @@ public class VFXMaker : EditorWindow
         GetWindow<VFXMaker>();
     }
 
-    //[MenuItem("Tools/Test Load Package Texture")]
-    //static void TestLoad()
-    //{
-    //    string path = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
-
-    //    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-
-    //    Debug.Log(tex != null
-    //        ? "Loaded texture: " + tex.name
-    //        : "FAILED to load texture at: " + path);
-    //}
-
-    private void OnEnable()
-    {
-        InspectorWatcher.OnParameterSelected += OnParamSelected;
-    }
-    private void OnDisable()
-    {
-        InspectorWatcher.OnParameterSelected -= OnParamSelected;
-    }
-    void OnParamSelected(VFXParameter p)
-    {
-        if (newName == null) return;
-
-        //p.exposedName = newName;
-        newName = null;
-        Repaint();
-    }
-
     private void HandleVFXAssetChange(VisualEffectAsset newVFX)
     {
         vfx = newVFX;
         RefreshCEP();
-        newName = null; 
+    }
 
-        //haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+    private void DrawTitleBar()
+    {
+        EditorGUILayout.BeginVertical("box");
 
-        //Debug.Log(haha);
+        GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel);
+
+        //Check if field has been changed
+        EditorGUI.BeginChangeCheck();
+        var newVFX = (VisualEffectAsset)EditorGUILayout.ObjectField(vfx, typeof(VisualEffectAsset), true);
+        if (EditorGUI.EndChangeCheck()) HandleVFXAssetChange(newVFX);
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawSettings()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        GUILayout.Label("Settings", EditorStyles.whiteLargeLabel);
+
+        GUILayout.BeginHorizontal();
+        EditorGUI.BeginChangeCheck();
+        overrule = EditorGUILayout.Toggle("Override", overrule);
+        addCEPs = EditorGUILayout.Toggle("Auto Add CEPs", addCEPs);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        randomSetting = (VFXEnum.VFXRandomSetting)EditorGUILayout.EnumPopup(randomSetting);
+        compositionSetting = (VFXEnum.VFXCompositionSetting)EditorGUILayout.EnumPopup(compositionSetting);
+        outputEnum = (VFXEnum.VFXOutputEnum)EditorGUILayout.EnumPopup(outputEnum);
+        attribute = (VFXEnum.VFXAttributes)EditorGUILayout.EnumPopup(attribute);
+        EditorGUI.EndChangeCheck();
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawPresets()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        GUILayout.Label("Presets", EditorStyles.whiteLargeLabel);
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule, addCEPs);
+        if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule, addCEPs);
+        if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule, addCEPs);
+        if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule, addCEPs);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawContexts()
+    {
+        EditorGUILayout.BeginVertical("box");
+        GUILayout.Label("Contexts", EditorStyles.whiteLargeLabel);
+
+        GUILayout.BeginVertical();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Spawn Context")) RussiaFall.SpawnModule(vfx, overrule);
+        if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
+        if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
+        if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum, 400);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Event Context")) RussiaFall.EventModule(vfx, overrule);
+        if (GUILayout.Button("GPU Event Context")) RussiaFall.GPUEventModule(vfx, overrule);
+        if (GUILayout.Button("GPU Event Context")) RussiaFall.OutputEventModule(vfx, overrule);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawSpawn()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        GUILayout.Label("Spawn", EditorStyles.whiteLargeLabel);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Constant Spawn Rate")) RussiaFall.ConstantModule(vfx, addCEPs);
+        if (GUILayout.Button("Burst Spawn")) RussiaFall.BurstModule(vfx, addCEPs);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawInit()
+    {
+        EditorGUILayout.BeginVertical("box");
+        GUILayout.Label("Initialize", EditorStyles.whiteLargeLabel);
+
+        EditorGUILayout.BeginVertical("box");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Position")) RussiaFall.PositionModule(vfx, randomSetting, compositionSetting, addCEPs);
+        if (GUILayout.Button("Velocity")) RussiaFall.VelocityModule(vfx, randomSetting, compositionSetting, addCEPs);
+        if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        if (GUILayout.Button("Angle")) RussiaFall.AngleModule(vfx, randomSetting, compositionSetting, addCEPs);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Position Shape")) RussiaFall.PositionShapeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawUpdate()
+    {
+        EditorGUILayout.BeginVertical("box");
+        GUILayout.Label("Update", EditorStyles.whiteLargeLabel);
+
+        EditorGUILayout.BeginVertical();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Collision Shape")) RussiaFall.CollisionShapeModule(vfx);
+        if (GUILayout.Button("Trigger Event")) RussiaFall.TriggerEventModule(vfx);
+        if (GUILayout.Button("Over Life: Update")) RussiaFall.OverLifeModule(vfx, attribute, compositionSetting, VFXEnum.VFXContextTarget.Update);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx, addCEPs);
+        if (GUILayout.Button("Drag")) RussiaFall.DragModule(vfx, addCEPs);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawOutput()
+    {
+        EditorGUILayout.BeginVertical("box");
+        GUILayout.Label("Output", EditorStyles.whiteLargeLabel);
+
+        EditorGUILayout.BeginVertical();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        if (GUILayout.Button("Scale")) RussiaFall.ScaleModule(vfx, randomSetting, compositionSetting, addCEPs);
+        if (GUILayout.Button("Orient")) RussiaFall.OrientModule(vfx);
+        if (GUILayout.Button("Over Life: Output")) RussiaFall.OverLifeModule(vfx, attribute, compositionSetting, VFXEnum.VFXContextTarget.Output);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Color")) RussiaFall.ColorModule(vfx, addCEPs);
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawCEP()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        GUILayout.Label("Custom Exposed Properties", EditorStyles.whiteLargeLabel);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Exposed Float")) RussiaFall.AddFloatProperty(vfx, 100.0f);
+        if (GUILayout.Button("Exposed Int")) RussiaFall.AddIntProperty(vfx, 100);
+        if (GUILayout.Button("Exposed Color")) RussiaFall.AddColorProperty(vfx, new Color(1, 1, 1));
+        if (GUILayout.Button("Exposed Vector3")) RussiaFall.AddVector3Property(vfx, new Vector3(1, 1, 1));
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Separator();
+    }
+
+    private void DrawValues()
+    {
+        EditorGUILayout.LabelField($"Found {CEPs.Count} exposed property(ies):", EditorStyles.boldLabel);
+
+        if (CEPs == null) return;
+
+        foreach (var p in CEPs)
+        {
+            EditorGUILayout.BeginVertical("box");
+            object newValue = DrawEditableValueField(p);
+
+            //If value changed => write back to VFX asset
+            if (newValue != null && !Equals(newValue, p.Value))
+            {
+                RussiaFall.SetExposedValue(vfx, p, newValue);
+            }
+
+            EditorGUILayout.EndVertical();
+        }
     }
 
     private void OnGUI()
     {
         RefreshCEP();
 
-        EditorGUILayout.BeginVertical("box");
-        GUILayout.Label("Target VFX Asset", EditorStyles.whiteLargeLabel);
-        
-        //Check if field has been changed
-        EditorGUI.BeginChangeCheck();
-        var newVFX = (VisualEffectAsset)EditorGUILayout.ObjectField(vfx, typeof(VisualEffectAsset), true);
-        if (EditorGUI.EndChangeCheck()) HandleVFXAssetChange(newVFX);
-        EditorGUILayout.EndVertical();
+        DrawTitleBar();
 
         //If no asset is present
         if (vfx == null)
@@ -113,137 +277,33 @@ public class VFXMaker : EditorWindow
         {
             scroll = EditorGUILayout.BeginScrollView(scroll);
 
-            //PRESETS START ------------------------------------------------------------------------------------------------------------
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Presets", EditorStyles.whiteLargeLabel);
+            DrawSettings();
 
-            EditorGUI.BeginChangeCheck();
-            overrule = EditorGUILayout.Toggle("Override", overrule);
-            EditorGUI.EndChangeCheck();
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Constant Emitter")) RussiaFall.GenerateConstantEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule);
-            if (GUILayout.Button("Burst Emitter")) RussiaFall.GenerateBurstEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule);
-            if (GUILayout.Button("Spiral Emitter")) RussiaFall.GenerateSpiralEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule);
-            if (GUILayout.Button("Gravity Emitter")) RussiaFall.GenerateGravityEmitter(vfx, outputEnum, randomSetting, compositionSetting, overrule);
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //PRESETS END ------------------------------------------------------------------------------------------------------------
-
-            EditorGUILayout.Separator();
-
-            //MODULES START ------------------------------------------------------------------------------------------------------------
-
-            //Settings Start
-            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.BeginVertical("Box");
             GUILayout.Label("Modules", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            EditorGUI.BeginChangeCheck();
-            randomSetting = (VFXEnum.VFXRandomSetting)EditorGUILayout.EnumPopup(randomSetting);
-            compositionSetting = (VFXEnum.VFXCompositionSetting)EditorGUILayout.EnumPopup(compositionSetting);
-            outputEnum = (VFXEnum.VFXOutputEnum)EditorGUILayout.EnumPopup(outputEnum);
-            attribute = (VFXEnum.VFXAttributes)EditorGUILayout.EnumPopup(attribute);
-            EditorGUI.EndChangeCheck();
-            GUILayout.EndHorizontal();
-            //Settings End
 
-            //Contexts Start
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("Contexts", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Spawn Context")) RussiaFall.SpawnModule(vfx, overrule);
-            if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
-            if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
-            if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum, 400);
-            //if (GUILayout.Button("Output 2 Context")) RussiaFall.Output2Module(vfx, outputEnum, haha);
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //Contexts End
+            DrawPresets();
 
-            //Spawn / Init Start
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("Spawn / Init", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Constant Spawn Rate")) RussiaFall.ConstantModule(vfx);
-            if (GUILayout.Button("Burst Spawn")) RussiaFall.BurstModule(vfx);
-            if (GUILayout.Button("Velocity")) RussiaFall.VelocityModule(vfx, randomSetting, compositionSetting);
-            if (GUILayout.Button("Lifetime")) RussiaFall.LifetimeModule(vfx, randomSetting, compositionSetting);
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //Spawn / Init End
+            DrawContexts();
 
-            //Update Start
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("Update", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx);
-            if (GUILayout.Button("testingshit")) RussiaFall.testingshit(vfx);
-            if (GUILayout.Button("Trigger Event On Die")) RussiaFall.TriggerEventModule(vfx);
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //Update End
+            DrawSpawn();
 
-            //Output Start
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("Output", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Size")) RussiaFall.SizeModule(vfx, randomSetting, compositionSetting);
-            if (GUILayout.Button("Scale")) RussiaFall.ScaleModule(vfx, randomSetting, compositionSetting);
-            if (GUILayout.Button("Over Life")) RussiaFall.OverLifeModule(vfx, attribute, compositionSetting);
-            if (GUILayout.Button("Orient")) RussiaFall.OrientModule(vfx);
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //Output End
+            DrawInit();
 
-            //CEP Start
-            EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("CEP", EditorStyles.whiteLargeLabel);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Exposed Float")) RussiaFall.AddFloatProperty(vfx, 100.0f);
-            if (GUILayout.Button("Exposed Int")) RussiaFall.AddIntProperty(vfx, 100);
-            if (GUILayout.Button("Exposed Color")) RussiaFall.AddColorProperty(vfx, new Color(1, 1, 1));
-            if (GUILayout.Button("Exposed Vector3")) RussiaFall.AddVector3Property(vfx, new Vector3(1, 1, 1));
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            //CEP End
+            DrawUpdate();
+
+            DrawOutput();
 
             EditorGUILayout.EndVertical();
-            //MODULES END ------------------------------------------------------------------------------------------------------------
 
             EditorGUILayout.Separator();
 
-            //CEP START ------------------------------------------------------------------------------------------------------------
-            EditorGUILayout.LabelField("Enter New Name for CEP:");
-            newName = EditorGUILayout.TextField(newName);
-            //CEP END ------------------------------------------------------------------------------------------------------------
+            DrawCEP();
 
-            EditorGUILayout.Separator();
+            DrawValues();
 
-            //VALUES START ------------------------------------------------------------------------------------------------------------
-            EditorGUILayout.LabelField($"Found {CEPs.Count} exposed property(ies):", EditorStyles.boldLabel);
-
-            if (CEPs == null) return;
-            
-            foreach (var p in CEPs)
-            {
-                EditorGUILayout.BeginVertical("box");
-                object newValue = DrawEditableValueField(p);
-
-                //If value changed => write back to VFX asset
-                if (newValue != null && !Equals(newValue, p.Value))
-                {
-                    RussiaFall.SetExposedValue(vfx, p, newValue);
-                }
-
-                EditorGUILayout.EndVertical();
-            }
-            //VALUES END ------------------------------------------------------------------------------------------------------------
             EditorGUILayout.EndScrollView();
         }
-
-        EditorGUILayout.Separator();
     }
 
     object DrawEditableValueField(ExposedPropertyInfo p)
@@ -303,6 +363,51 @@ public class VFXMaker : EditorWindow
 }
 
 
+
+//private void OnEnable()
+//{
+//    InspectorWatcher.OnParameterSelected += OnParamSelected;
+//}
+//private void OnDisable()
+//{
+//    InspectorWatcher.OnParameterSelected -= OnParamSelected;
+//}
+//void OnParamSelected(VFXParameter p)
+//{
+//    Repaint();
+//}
+
+
+//EditorGUILayout.Separator();
+
+//CEP START ------------------------------------------------------------------------------------------------------------
+//EditorGUILayout.LabelField("Enter New Name for CEP:");
+//newName = EditorGUILayout.TextField(newName);
+//CEP END ------------------------------------------------------------------------------------------------------------
+
+
+//private Texture2D haha = null;
+//private string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+//[MenuItem("Tools/Test Load Package Texture")]
+//static void TestLoad()
+//{
+//    string path = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+
+//    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+//    Debug.Log(tex != null
+//        ? "Loaded texture: " + tex.name
+//        : "FAILED to load texture at: " + path);
+//}
+
+//haha = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+
+//Debug.Log(haha);
+//if (GUILayout.Button("Output 2 Context")) RussiaFall.Output2Module(vfx, outputEnum, haha);
+
+
+
+//if (GUILayout.Button("testingshit")) RussiaFall.testingshit(vfx);
 
 
 //enum Tab

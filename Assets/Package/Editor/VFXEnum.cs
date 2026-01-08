@@ -27,7 +27,16 @@ public class VFXEnum
         Overwrite,
         Add,
         Multiply,
-        Blend,
+        Blend_NOTWORKING,
+    }
+
+    [System.Serializable]
+    public enum VFXContextTarget
+    {
+        Spawn,
+        Init,
+        Update,
+        Output
     }
 
     [System.Serializable]
