@@ -353,6 +353,24 @@ public static class RussiaFall
             update.LinkTo(output);
             graph.AddChild(output);
         }
+
+        //Creates Shader Graph Mesh Output Context
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXQuadStripOutput)
+        {
+            var output = ScriptableObject.CreateInstance<VFXQuadStripOutput>();
+            output.position = new Vector2(update.position.x, gapAmount * 3);
+            update.LinkTo(output);
+            graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+
+            if (texture != null) slot.value = texture;
+            else Debug.Log("Yea this aint working");
+
+            if (slot == null) Debug.Log("slot also not working bud");
+            else Debug.Log("nah this works");
+        }
     }
 
     //Adds Event Context to the Current VFX Graph

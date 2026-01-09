@@ -10,7 +10,8 @@ public class VFXEnum
         VFXURPLitMeshOutput,
         VFXURPLitPlanarPrimitiveOutput,
         VFXShaderGraphMesh,
-        VFXShaderGraphQuad
+        VFXShaderGraphQuad,
+        VFXQuadStripOutput
     }
 
     [System.Serializable]
