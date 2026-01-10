@@ -226,7 +226,8 @@ public static class RussiaFall
 
         //Creates Initialize Module
         var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
-        init.SetSettingValue("capacity", 1024u);
+        //init.SetSettingValue("capacity", 1024u);
+        init.SetSettingValue("dataType", VFXDataParticle.DataType.ParticleStrip);
         graph.AddChild(init);
 
         var contexts = graph.children.OfType<VFXContext>();
@@ -354,7 +355,7 @@ public static class RussiaFall
             graph.AddChild(output);
         }
 
-        //Creates Shader Graph Mesh Output Context
+        //Creates Quad Strip Output Context
         if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXQuadStripOutput)
         {
             var output = ScriptableObject.CreateInstance<VFXQuadStripOutput>();
@@ -370,6 +371,22 @@ public static class RussiaFall
 
             if (slot == null) Debug.Log("slot also not working bud");
             else Debug.Log("nah this works");
+        }
+
+        //Creates Shader Graph Mesh Output Context
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXURPLitQuadStripOutput)
+        {
+            var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitQuadStripOutput, Unity.RenderPipelines.Universal.Editor");
+            if (type == null)
+            {
+                Debug.LogError("Couldn't find URP Lit Output type!");
+                return;
+            }
+
+            var output = ScriptableObject.CreateInstance(type) as VFXContext;
+            output.position = new Vector2(update.position.x, gapAmount * 3);
+            update.LinkTo(output);
+            graph.AddChild(output);
         }
     }
 
@@ -1105,6 +1122,20 @@ public static class RussiaFall
         }
 
         return null;
+    }
+
+
+    public static void ReadTypes(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+        var settings = init.GetSettings(true, VFXSettingAttribute.VisibleFlags.None | VFXSettingAttribute.VisibleFlags.InInspector | VFXSettingAttribute.VisibleFlags.InGraph | VFXSettingAttribute.VisibleFlags.Default | VFXSettingAttribute.VisibleFlags.InGeneratedCodeComments).ToList();
+
+        for (int i = 0; i < settings.Count; i++)
+        {
+            Debug.Log(settings[i].name + " | " + settings[i].value);
+        }
     }
 }
 

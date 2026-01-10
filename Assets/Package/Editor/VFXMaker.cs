@@ -210,6 +210,7 @@ public class VFXMaker : EditorWindow
 
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Color")) RussiaFall.ColorModule(vfx, addCEPs);
+        if (GUILayout.Button("Read Types")) RussiaFall.ReadTypes(vfx);
         GUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
