@@ -110,16 +110,17 @@ public class VFXMaker : EditorWindow
         GUILayout.BeginVertical();
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Spawn Context")) RussiaFall.SpawnModule(vfx, overrule);
-        if (GUILayout.Button("Initialise Context")) RussiaFall.InitialiseModule(vfx);
-        if (GUILayout.Button("Update Context")) RussiaFall.UpdateModule(vfx);
-        if (GUILayout.Button("Output Context")) RussiaFall.OutputModule(vfx, outputEnum, 400);
+        if (GUILayout.Button("Spawn")) RussiaFall.SpawnModule(vfx, overrule);
+        if (GUILayout.Button("Initialise Particle")) RussiaFall.InitialiseModule(vfx, false);
+        if (GUILayout.Button("Update")) RussiaFall.UpdateModule(vfx);
+        if (GUILayout.Button("Output")) RussiaFall.OutputModule(vfx, outputEnum, 400);
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Event Context")) RussiaFall.EventModule(vfx, overrule);
-        if (GUILayout.Button("GPU Event Context")) RussiaFall.GPUEventModule(vfx, overrule);
-        if (GUILayout.Button("GPU Event Context")) RussiaFall.OutputEventModule(vfx, overrule);
+        if (GUILayout.Button("Event")) RussiaFall.EventModule(vfx, overrule);
+        if (GUILayout.Button("Initialise Strip")) RussiaFall.InitialiseModule(vfx, true);
+        if (GUILayout.Button("GPU Event")) RussiaFall.GPUEventModule(vfx, overrule);
+        if (GUILayout.Button("Output Event")) RussiaFall.OutputEventModule(vfx, overrule);
         GUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();

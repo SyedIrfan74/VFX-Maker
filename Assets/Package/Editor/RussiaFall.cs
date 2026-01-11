@@ -65,7 +65,7 @@ public static class RussiaFall
         SpawnModule(vfx, overrule);
 
         //Creates Init Module
-        InitialiseModule(vfx);
+        InitialiseModule(vfx, false);
 
         //Creates Update Module
         UpdateModule(vfx);
@@ -220,14 +220,14 @@ public static class RussiaFall
     }
 
     //Adds VFX Initialise Context to the Current VFX Graph
-    public static void InitialiseModule(VisualEffectAsset vfx, float gapAmount = 400)
+    public static void InitialiseModule(VisualEffectAsset vfx, bool strip, float gapAmount = 400)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
 
         //Creates Initialize Module
         var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
         //init.SetSettingValue("capacity", 1024u);
-        init.SetSettingValue("dataType", VFXDataParticle.DataType.ParticleStrip);
+        if (strip) init.SetSettingValue("dataType", VFXDataParticle.DataType.ParticleStrip);
         graph.AddChild(init);
 
         var contexts = graph.children.OfType<VFXContext>();
