@@ -6,11 +6,18 @@
   "unity": "6000.0",
   "dependencies": {
     "com.unity.visualeffectgraph": "17.0.4"
- },
+  },
   "author": {
     "name": "Syed Irfan",
     "email": "yatirfan74@gmail.com",
     "url": "https://github.com/SyedIrfan74/VFX-Maker.git"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Assets",
+      "description": "Included Assets from Author",
+      "path":  "Samples~/Assets"
+    }
+  ]
 }
 
