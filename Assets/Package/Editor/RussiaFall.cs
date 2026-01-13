@@ -37,6 +37,9 @@ public static class RussiaFall
         }
 
         string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+
+        Debug.Log(guids);
+        Debug.Log(path);
         var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
 
 
