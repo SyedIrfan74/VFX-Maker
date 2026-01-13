@@ -20,7 +20,11 @@ using Operator = UnityEditor.VFX.Operator;
 
 public static class RussiaFall
 {
-    private static string texturePath = "Packages/com.github.syedirfan74.vfxmaker/Textures/Star.png";
+    private static string packagePath = "Packages/com.github.syedirfan74.vfxmaker";
+    private static string texturePath = packagePath + "/Textures/Star.png";
+    private static string destinationPath = "Assets/VFXMaker";
+    private static string assetsPath = "/Samples~";
+
 
     //Creates new VisualEffectAsset in designated file path with specified name
     public static VisualEffectAsset CreateVFXAsset(string path, string newAssetName, VisualEffectAsset vfx)
@@ -75,6 +79,22 @@ public static class RussiaFall
 
         return graph;
     }
+
+    //Import Assets into User's Project
+    [MenuItem("Window/VFXMaker/Import Assets")]
+    public static void ImportAssets()
+    {
+        var source = packagePath + assetsPath;
+        
+        if (!Directory.Exists(source))
+        {
+            Debug.LogError("Path does not exist");
+            return;
+        }
+
+        FileUtil.CopyFileOrDirectory(source, destinationPath);
+        AssetDatabase.Refresh();
+    }
     
     //PRESETS START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,13 +109,13 @@ public static class RussiaFall
         ConstantModule(vfx, addCEPs);
 
         //Set Velocity Random per Component 
-        VelocityModule(vfx, randomSetting, compositionSetting, addCEPs);
+        VelocityModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Set Lifetime Random per Component
-        LifetimeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        LifetimeModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Set Color
-        ColorModule(vfx, addCEPs);
+        ColorModule(vfx, VFXEnum.VFXContextTarget.Init, addCEPs);
     }
 
     //Creates a Basic Burst Emitter VFX Graph
@@ -106,16 +126,16 @@ public static class RussiaFall
         if (graph == null) return;
 
         //Burst Spawner
-        BurstModule(vfx, addCEPs);
+        BurstModule(vfx, addCEPs, false);
 
         //Set Velocity Random per Component 
-        VelocityModule(vfx, randomSetting, compositionSetting, addCEPs);
+        VelocityModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Set Lifetime Random per Component
-        LifetimeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        LifetimeModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Set Color
-        ColorModule(vfx, addCEPs);
+        ColorModule(vfx, VFXEnum.VFXContextTarget.Init, addCEPs);
     }
 
     //Creates a Basic Spiral Emitter VFX Graph
@@ -137,11 +157,11 @@ public static class RussiaFall
         //Constant Spawner
         ConstantModule(vfx, addCEPs);
 
-        //Set Velocity  
-        VelocityModule(vfx, randomSetting, compositionSetting, addCEPs);
+        //Set Velocity Random per Component 
+        VelocityModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
-        //Set Lifetime 
-        LifetimeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        //Set Lifetime Random per Component
+        LifetimeModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //INIT END --------------------------------------------------------------------
 
@@ -190,16 +210,16 @@ public static class RussiaFall
         ConstantModule(vfx, addCEPs);
 
         //Set Velocity Random per Component 
-        VelocityModule(vfx, randomSetting, compositionSetting, addCEPs);
+        VelocityModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Set Lifetime Random per Component
-        LifetimeModule(vfx, randomSetting, compositionSetting, addCEPs);
+        LifetimeModule(vfx, VFXEnum.VFXContextTarget.Init, randomSetting, compositionSetting, addCEPs);
 
         //Add Gravity
         GravityModule(vfx, addCEPs);
 
         //Set Color
-        ColorModule(vfx, addCEPs);
+        ColorModule(vfx, VFXEnum.VFXContextTarget.Init, addCEPs);
     }
 
     //PRESETS END ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -464,7 +484,7 @@ public static class RussiaFall
     }
 
     //Adds Burst Spawner Node to Spawn Context
-    public static void BurstModule(VisualEffectAsset vfx, bool addCEPs)
+    public static void BurstModule(VisualEffectAsset vfx, bool addCEPs, bool periodic)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
@@ -472,6 +492,9 @@ public static class RussiaFall
 
         //Constant Rate Spawner
         var burst = ScriptableObject.CreateInstance<VFXSpawnerBurst>();
+
+        if (periodic) burst.SetSettingValue("repeat", VFXSpawnerBurst.RepeatMode.Periodic);
+
         burst.GetInputSlot(0).value = 32.0f;
         spawn.AddChild(burst);
 
@@ -484,12 +507,11 @@ public static class RussiaFall
     //INITIALIZE START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
     //Adds Position to the current VFX Graph
-    public static void PositionModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void PositionModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-
+       
         //Set Velocity 
         var setPosition = ScriptableObject.CreateInstance<Block.SetAttribute>();
         setPosition.SetSettingValue("attribute", VFXAttribute.Position.name);
@@ -519,15 +541,15 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setPosition.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setPosition.Composition = AttributeCompositionMode.Add;
 
-        init.AddChild(setPosition);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setPosition);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setPosition);
     }
 
     //Adds Velocity to the current VFX Graph
-    public static void VelocityModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void VelocityModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
 
         //Set Velocity 
         var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
@@ -558,15 +580,15 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setVelocity.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setVelocity.Composition = AttributeCompositionMode.Add;
         
-        init.AddChild(setVelocity);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setVelocity);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setVelocity);
     }
 
     //Adds Lifetime to the current VFX Graph
-    public static void LifetimeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void LifetimeModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
 
         //Set Velocity Random per Component 
         var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
@@ -597,15 +619,15 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setLifetime.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setLifetime.Composition = AttributeCompositionMode.Add;
 
-        init.AddChild(setLifetime);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setLifetime);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setLifetime);
     }
 
     //Adds Angle to the current VFX Graph
-    public static void AngleModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void AngleModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
 
         //Set Velocity Random per Component 
         var setAngle = ScriptableObject.CreateInstance<Block.SetAttribute>();
@@ -636,7 +658,8 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setAngle.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setAngle.Composition = AttributeCompositionMode.Add;
 
-        init.AddChild(setAngle);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setAngle);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setAngle);
     }
 
     public static void PositionShapeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
@@ -722,7 +745,7 @@ public static class RussiaFall
         update.AddChild(triggerEvent);
     }
 
-    //Adds Trigger Event to the current VFX Graph
+    //Adds Collision Shape to the current VFX Graph
     public static void CollisionShapeModule(VisualEffectAsset vfx)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
@@ -740,11 +763,10 @@ public static class RussiaFall
     //OUTPUT START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
     //Adds Size to the current VFX Graph
-    public static void SizeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void SizeModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
 
         //Set Velocity Random per Component 
         var setSize = ScriptableObject.CreateInstance<Block.SetAttribute>();
@@ -775,15 +797,15 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setSize.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setSize.Composition = AttributeCompositionMode.Add;
 
-        output.AddChild(setSize);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setSize);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setSize);
     }
 
     //Adds Scale to the current VFX Graph
-    public static void ScaleModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    public static void ScaleModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
 
         //Set Velocity Random per Component 
         var setScale = ScriptableObject.CreateInstance<Block.SetAttribute>();
@@ -814,7 +836,23 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setScale.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setScale.Composition = AttributeCompositionMode.Add;
 
-        output.AddChild(setScale);
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setScale);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setScale);
+    }
+
+    //Adds Color to current VFX Graph
+    public static void ColorModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, bool addCEPs)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+
+        var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
+        setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
+
+        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setColor);
+        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setColor);
+
+        if (addCEPs) AddColorProperty(vfx, new Color(1, 1, 1));
     }
 
     //Adds Orient to the current VFX Graph
@@ -829,20 +867,6 @@ public static class RussiaFall
         orient.mode = Orient.Mode.FaceCameraPlane;
 
         output.AddChild(orient);
-    }
-
-    //Adds Color to current VFX Graph
-    public static void ColorModule(VisualEffectAsset vfx, bool addCEPs)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
-
-        var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-        setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-        output.AddChild(setColor);
-
-        if (addCEPs) AddColorProperty(vfx, new Color(1, 1, 1));
     }
 
     //OUTPUT START ------------------------------------------------------------------------------------------------------------------------------------------------------
