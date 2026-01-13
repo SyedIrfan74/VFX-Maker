@@ -24,6 +24,18 @@ public static class RussiaFall
     private static string texturePath = packagePath + "/Textures/Star.png";
     private static string destinationPath = "Assets/VFXMaker";
     private static string assetsPath = "/Samples~";
+    private static string subgraphPath = "/Subgraphs";
+
+    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
+    {
+        var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(subgraphPath + "/" + subgraphName);
+
+        if (subgraph == null) {
+            Debug.LogWarning("No asset detected.");
+            return;
+        }
+        Debug.Log(subgraph.name);
+    }
 
 
     //Creates new VisualEffectAsset in designated file path with specified name
@@ -1147,7 +1159,6 @@ public static class RussiaFall
 
         return null;
     }
-
 
     public static void ReadTypes(VisualEffectAsset vfx)
     {
