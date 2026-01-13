@@ -28,7 +28,7 @@ public static class RussiaFall
 
     public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
     {
-        var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(subgraphPath + "/" + subgraphName);
+        var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(packagePath + "/" + subgraphPath + "/" + subgraphName);
 
         if (subgraph == null) {
             Debug.LogWarning("No asset detected.");
