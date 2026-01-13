@@ -28,10 +28,26 @@ public static class RussiaFall
 
     public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
     {
-        var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
-        //"C:\Users\Syed Irfan\Y3Sem2\SPROJ\VFX-Maker\Assets\Package\Subgraphs\Random Radial.vfxoperator"
+        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator Random Radial");
 
-        Debug.Log(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Subgraph not found");
+            return;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
+
+
+
+
+
+
+        //var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
+        ////"C:\Users\Syed Irfan\Y3Sem2\SPROJ\VFX-Maker\Assets\Package\Subgraphs\Random Radial.vfxoperator"
+
+        //Debug.Log(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
 
         if (subgraph == null) {
             Debug.LogWarning("No asset detected.");
