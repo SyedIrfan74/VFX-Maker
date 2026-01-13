@@ -28,7 +28,7 @@ public static class RussiaFall
 
     public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
     {
-        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator Random Radial");
+        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
 
         if (guids.Length == 0)
         {
