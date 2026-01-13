@@ -45,7 +45,7 @@ public static class RussiaFall
         }
 
         var graph = vfx.GetResource().GetOrCreateGraph();
-        var op = ScriptableObject.CreateInstance<VFXOperator>();
+        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
         op.SetSettingValue("m_Subgraph", subgraph);
         graph.AddChild(op);
     }
