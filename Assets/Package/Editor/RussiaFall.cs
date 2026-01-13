@@ -37,26 +37,17 @@ public static class RussiaFall
         }
 
         string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-
-        Debug.Log(guids);
-        Debug.Log(path);
         var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
-
-
-
-
-
-
-        //var subgraph = AssetDatabase.LoadAssetAtPath<VFXSubgraphOperator>(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
-        ////"C:\Users\Syed Irfan\Y3Sem2\SPROJ\VFX-Maker\Assets\Package\Subgraphs\Random Radial.vfxoperator"
-
-        //Debug.Log(packagePath + "/Subgraphs/" + subgraphName + ".vfxoperator");
 
         if (subgraph == null) {
             Debug.LogWarning("No asset detected.");
             return;
         }
-        Debug.Log(subgraph.name);
+
+        var graph = vfx.GetResource().GetOrCreateGraph();
+        var op = ScriptableObject.CreateInstance<VFXOperator>();
+        op.SetSettingValue("m_Subgraph", subgraph);
+        graph.AddChild(op);
     }
 
 
