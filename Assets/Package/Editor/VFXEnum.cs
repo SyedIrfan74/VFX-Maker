@@ -5,14 +5,17 @@ public class VFXEnum
     [System.Serializable]
     public enum VFXOutputEnum
     {
-        VFXPlanarPrimitiveOutput,
-        VFXMeshOutput,
-        VFXURPLitMeshOutput,
-        VFXURPLitPlanarPrimitiveOutput,
-        VFXShaderGraphMesh,
-        VFXShaderGraphQuad,
-        VFXQuadStripOutput,
-        VFXURPLitQuadStripOutput
+        UnlitQuad,
+        UnlitMesh,
+
+        URPLitQuad,
+        URPLitMesh,
+
+        ShaderGraphQuad,
+        ShaderGraphMesh,
+        
+        UnlitQuadStrip,
+        URPLitQuadStrip
     }
 
     [System.Serializable]

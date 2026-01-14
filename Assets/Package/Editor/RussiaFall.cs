@@ -21,35 +21,8 @@ using Operator = UnityEditor.VFX.Operator;
 public static class RussiaFall
 {
     public static string packagePath = "Packages/com.github.syedirfan74.vfxmaker";
-    private static string texturePath = packagePath + "/Textures/Star.png";
     private static string destinationPath = "Assets/VFXMaker";
     private static string assetsPath = "/Samples~";
-    private static string subgraphPath = "/Subgraphs";
-
-    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
-    {
-        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
-
-        if (guids.Length == 0)
-        {
-            Debug.LogError("Subgraph not found");
-            return;
-        }
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
-
-        if (subgraph == null) {
-            Debug.LogWarning("No asset detected.");
-            return;
-        }
-
-        var graph = vfx.GetResource().GetOrCreateGraph();
-        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
-        op.SetSettingValue("m_Subgraph", subgraph);
-        graph.AddChild(op);
-    }
-
 
     //Creates new VisualEffectAsset in designated file path with specified name
     public static VisualEffectAsset CreateVFXAsset(string path, string newAssetName, VisualEffectAsset vfx)
@@ -82,6 +55,12 @@ public static class RussiaFall
         if (vfx == null)
         {
             Debug.LogError("No VFX Asset Detected! Ensure Asset is Referenced!");
+            return null;
+        }
+
+        if (outputEnum == VFXEnum.VFXOutputEnum.UnlitQuadStrip || outputEnum == VFXEnum.VFXOutputEnum.URPLitQuadStrip)
+        {
+            Debug.LogWarning("Particle Strip currently not Compatible with Presets");
             return null;
         }
 
@@ -308,7 +287,7 @@ public static class RussiaFall
         var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
 
         //Creates Unlit Quad Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitQuad)
         {
             var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
             output.position = new Vector2(update.position.x, gapAmount * 3);
@@ -316,26 +295,37 @@ public static class RussiaFall
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
-            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+            var texture = GetTextureAsset("4 Point Star");
 
             if (texture != null) slot.value = texture;
-            else Debug.Log("Yea this aint working");
-
-            if (slot == null) Debug.Log("slot also not working bud");
-            else Debug.Log("nah this works");
+            else if (texture == null || slot == null)
+            {
+                Debug.LogWarning("Texture or Slot not found.");
+                return;
+            }
         }
 
         //Creates Unlit Mesh Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXMeshOutput)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitMesh)
         {
             var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
             output.position = new Vector2(update.position.x, gapAmount * 3);
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
+            var mesh = GetMeshAsset("Bipyramid");
+
+            if (mesh != null) slot.value = mesh;
+            else if (mesh == null || slot == null)
+            {
+                Debug.LogWarning("Mesh or Slot not found.");
+                return;
+            }
         }
 
         //Creates Lit Quad Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXURPLitPlanarPrimitiveOutput)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.URPLitQuad)
         {
             var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitPlanarPrimitiveOutput, Unity.RenderPipelines.Universal.Editor");
             if (type == null)
@@ -348,10 +338,20 @@ public static class RussiaFall
             output.position = new Vector2(update.position.x, gapAmount * 3);
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
+            var texture = GetTextureAsset("4 Point Star");
+
+            if (texture != null) slot.value = texture;
+            else if (texture == null || slot == null)
+            {
+                Debug.LogWarning("Texture or Slot not found.");
+                return;
+            }
         }
 
         //Creates Lit Mesh Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXURPLitMeshOutput)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.URPLitMesh)
         {
             var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitMeshOutput, Unity.RenderPipelines.Universal.Editor");
             if (type == null)
@@ -364,12 +364,22 @@ public static class RussiaFall
             output.position = new Vector2(update.position.x, gapAmount * 3);
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
+            var mesh = GetMeshAsset("Bipyramid");
+
+            if (mesh != null) slot.value = mesh;
+            else if (mesh == null || slot == null)
+            {
+                Debug.LogWarning("Mesh or Slot not found.");
+                return;
+            }
         }
 
         //Creates Shader Graph Quad Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXShaderGraphQuad)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.ShaderGraphQuad)
         {
-            var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput" + ", Unity.VisualEffectGraph.Editor");
+            var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput, Unity.VisualEffectGraph.Editor");
             if (type == null)
             {
                 Debug.LogError("Could not find Type!");
@@ -384,9 +394,9 @@ public static class RussiaFall
         }
 
         //Creates Shader Graph Mesh Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXShaderGraphMesh)
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.ShaderGraphMesh)
         {
-            var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput" + ", Unity.VisualEffectGraph.Editor");
+            var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput, Unity.VisualEffectGraph.Editor");
             if (type == null)
             {
                 Debug.LogError("Could not find Type!");
@@ -398,10 +408,20 @@ public static class RussiaFall
             output.SetSettingValue("m_Topology", new ParticleTopologyMesh());
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
+            var mesh = GetMeshAsset("Bipyramid");
+
+            if (mesh != null) slot.value = mesh;
+            else if (mesh == null || slot == null)
+            {
+                Debug.LogWarning("Mesh or Slot not found.");
+                return;
+            }
         }
 
-        //Creates Quad Strip Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXQuadStripOutput)
+        //Creates Unlit Quad Strip Output Context
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitQuadStrip)
         {
             var output = ScriptableObject.CreateInstance<VFXQuadStripOutput>();
             output.position = new Vector2(update.position.x, gapAmount * 3);
@@ -409,17 +429,18 @@ public static class RussiaFall
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
-            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+            var texture = GetTextureAsset("4 Point Star");
 
             if (texture != null) slot.value = texture;
-            else Debug.Log("Yea this aint working");
-
-            if (slot == null) Debug.Log("slot also not working bud");
-            else Debug.Log("nah this works");
+            else if (texture == null || slot == null)
+            {
+                Debug.LogWarning("Texture or Slot not found.");
+                return;
+            }
         }
 
-        //Creates Shader Graph Mesh Output Context
-        if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXURPLitQuadStripOutput)
+        //Creates Lit Quad Strip Output Context
+        if (VFXEnum == global::VFXEnum.VFXOutputEnum.URPLitQuadStrip)
         {
             var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitQuadStripOutput, Unity.RenderPipelines.Universal.Editor");
             if (type == null)
@@ -432,6 +453,16 @@ public static class RussiaFall
             output.position = new Vector2(update.position.x, gapAmount * 3);
             update.LinkTo(output);
             graph.AddChild(output);
+
+            var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
+            var texture = GetTextureAsset("4 Point Star");
+
+            if (texture != null) slot.value = texture;
+            else if (texture == null || slot == null)
+            {
+                Debug.LogWarning("Texture or Slot not found.");
+                return;
+            }
         }
     }
 
@@ -1185,503 +1216,61 @@ public static class RussiaFall
             Debug.Log(settings[i].name + " | " + settings[i].value);
         }
     }
+
+    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
+
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Subgraph not found");
+            return;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
+
+        if (subgraph == null)
+        {
+            Debug.LogWarning("No asset detected.");
+            return;
+        }
+
+        var graph = vfx.GetResource().GetOrCreateGraph();
+        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
+        op.SetSettingValue("m_Subgraph", subgraph);
+        graph.AddChild(op);
+    }
+
+    public static Texture2D GetTextureAsset(string textureName)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Texture2D " + textureName);
+
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Texture not found");
+            return null;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+        return texture;
+    }
+
+    public static Mesh GetMeshAsset(string meshName)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Mesh " + meshName);
+
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Mesh not found");
+            return null;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+
+        return mesh;
+    }
 }
-
-
-
-
-
-
-
-
-
-//public static void testingshit(VisualEffectAsset vfx)
-//{
-//    var graph = vfx.GetResource()?.GetOrCreateGraph();
-//    var contexts = graph.children.OfType<VFXContext>();
-//    var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
-
-//    var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
-
-//    EditorApplication.delayCall += () =>
-//    {
-//        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
-
-//        if (texture != null) slot.value = texture;
-//        else Debug.Log("Yea this aint working");
-
-//        if (slot == null) Debug.Log("slot also not working bud");
-//        else Debug.Log("nah this works");
-
-//        graph.RecompileIfNeeded();
-//        EditorUtility.SetDirty(vfx);
-//    };
-//}
-
-
-//Adds VFX Output Context to the Current VFX Graph
-//public static void Output2Module(VisualEffectAsset vfx, VFXEnum.VFXOutputEnum VFXEnum, Texture2D texture, float gapAmount = 400)
-//{
-//    var graph = vfx.GetResource()?.GetOrCreateGraph();
-//    var contexts = graph.children.OfType<VFXContext>();
-//    var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-//    //Creates Unlit Quad Output Context
-//    if (VFXEnum == global::VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
-//    {
-//        var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
-//        output.position = new Vector2(update.position.x, gapAmount * 3);
-//        update.LinkTo(output);
-//        graph.AddChild(output);
-
-//        var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
-//        slot.value = texture;
-//    }
-//}
-
-
-
-
-
-//param.exposed = true;                  // Make it exposed
-//param.exposedName = propertyName;             // Property Name
-
-
-
-//float kContextOffset = 400.0f;
-
-////Getting Contexts
-//var contexts = graph.children.OfType<VFXContext>();
-//var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
-//var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-//var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-//var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
-
-
-
-
-
-
-//Create Color Operator with Random Generated Color
-//var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
-//constantRate.GetInputSlot(0).value = 32.0f;
-//spawn.AddChild(constantRate);
-//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-//setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-//init.AddChild(setVelocity);
-//var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-//setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setLifetime.GetInputSlot(0).value = 1f;
-//setLifetime.GetInputSlot(1).value = 10f;
-//init.AddChild(setLifetime);
-//var gravity = ScriptableObject.CreateInstance<Gravity>();
-//update.AddChild(gravity);
-//var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-//output.AddChild(setColor);
-//var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-//hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-//hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-//hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-//graph.AddChild(hsvColor);
-
-//var constant = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
-//constant.GetInputSlot(0).value = 100.0f;
-//spawn.AddChild(constant);
-//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-//setVelocity.SetSettingValue("Random", Block.RandomMode.Off);
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(0, 1, 0));
-//init.AddChild(setVelocity);
-//var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-//setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
-//setLifetime.GetInputSlot(0).value = 15f;
-//init.AddChild(setLifetime);
-
-
-//float kContextOffset = 400.0f;
-
-////Getting Contexts
-//var contexts = graph.children.OfType<VFXContext>();
-//var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
-//var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-//var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-//var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
-
-
-
-//Create Color Operator with Random Generated Color
-//var burst = ScriptableObject.CreateInstance<VFXSpawnerBurst>();
-//burst.GetInputSlot(0).value = 32.0f;
-//spawn.AddChild(burst);
-//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-//setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-//init.AddChild(setVelocity);
-//var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-//setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setLifetime.GetInputSlot(0).value = 1f;
-//setLifetime.GetInputSlot(1).value = 10f;
-//init.AddChild(setLifetime);
-//var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-//output.AddChild(setColor);
-//var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-//hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-//hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-//hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-//graph.AddChild(hsvColor);
-
-
-
-
-
-
-//float kContextOffset = 400.0f;
-
-//Getting Contexts
-//var contexts = graph.children.OfType<VFXContext>();
-//var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
-//var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-//var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-//var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
-
-//Create Color Operator with Random Generated Color
-//var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
-//constantRate.GetInputSlot(0).value = 32.0f;
-//spawn.AddChild(constantRate);
-//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-//setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-//init.AddChild(setVelocity);
-//var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-//setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setLifetime.GetInputSlot(0).value = 1f;
-//setLifetime.GetInputSlot(1).value = 10f;
-//init.AddChild(setLifetime);
-//var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-//output.AddChild(setColor);
-
-//var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-//hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-//hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-//hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-//graph.AddChild(hsvColor);
-
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.None)
-//{
-//    Debug.LogError("Select Output Context!");
-//    return null;
-//}
-
-
-//Adds Lifetime to the current VFX Graph
-//public static void LifetimeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting)
-//{
-//    var graph = vfx.GetResource()?.GetOrCreateGraph();
-//    var contexts = graph.children.OfType<VFXContext>();
-//    var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-
-//    //Set Velocity Random per Component 
-//    var setLifetime = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//    setLifetime.SetSettingValue("attribute", VFXAttribute.Lifetime.name);
-
-//    //Random Setting
-//    if (randomSetting == VFXEnum.VFXRandomSetting.Off) {
-//        setLifetime.SetSettingValue("Random", Block.RandomMode.Off);
-//    }
-//    if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent)
-//    {
-//        setLifetime.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//    }
-//    if (randomSetting == VFXEnum.VFXRandomSetting.Uniform)
-//    {
-//        setLifetime.SetSettingValue("Random", Block.RandomMode.Uniform);
-//    }
-
-//    //Random Input
-//    if (randomSetting == VFXEnum.VFXRandomSetting.Off)
-//    {
-//        setLifetime.GetInputSlot(0).value = 10.0f;
-//    }
-//    else
-//    {
-//        setLifetime.GetInputSlot(0).value = 1.0f;
-//        setLifetime.GetInputSlot(1).value = 10.0f;
-//    }
-
-//    init.AddChild(setLifetime);
-//}
-
-//var contexts = graph.children.OfType<VFXContext>();   
-//var spawner = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Spawner);
-//var init = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Init);
-//var update = contexts.FirstOrDefault(c => c.contextType == VFXContextType.Update);
-
-//var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
-//spawner.position = new Vector2(0, 0);
-//var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
-//init.SetSettingValue("capacity", 1024u);
-//init.position = new Vector2(0, gapAmount);
-//var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
-//update.position = new Vector2(0, gapAmount * 2);
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXPlanarPrimitiveOutput)
-//{
-//    var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
-//    output.position = new Vector2(0, gapAmount * 3);
-//    update.LinkTo(output);
-//    graph.AddChild(output);
-//}
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXMeshOutput)
-//{
-//    var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
-//    output.position = new Vector2(0, gapAmount * 3);
-//    update.LinkTo(output);
-//    graph.AddChild(output);
-//}
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXURPLitMeshOutput)
-//{
-//    var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitMeshOutput, Unity.RenderPipelines.Universal.Editor");
-//    if (type != null)
-//    {
-//        var output = ScriptableObject.CreateInstance(type) as VFXContext;
-//        Debug.Log("Created URP Lit Output: " + output);
-
-//        output.position = new Vector2(0, gapAmount * 3);
-//        update.LinkTo(output);
-//        graph.AddChild(output);
-//    }
-//    else
-//    {
-//        Debug.LogError("Couldn't find URP Lit Output type!");
-//        return null;
-//    }
-//}
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXURPLitPlanarPrimitiveOutput)
-//{
-//    var type = Type.GetType("UnityEditor.VFX.URP.VFXURPLitPlanarPrimitiveOutput, Unity.RenderPipelines.Universal.Editor");
-//    if (type != null)
-//    {
-//        var output = ScriptableObject.CreateInstance(type) as VFXContext;
-//        Debug.Log("Created URP Lit Output: " + output);
-
-//        output.position = new Vector2(0, gapAmount * 3);
-//        update.LinkTo(output);
-//        graph.AddChild(output);
-//    }
-//    else
-//    {
-//        Debug.LogError("Couldn't find URP Lit Output type!");
-//        return null;
-//    }
-//}
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXShaderGraphMesh)
-//{
-//    var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput" + ", Unity.VisualEffectGraph.Editor");
-//    if (type == null)
-//    {
-//        Debug.LogError("Could not find Type!");
-//        return null;
-//    }
-
-//    var output = ScriptableObject.CreateInstance(type) as VFXContext;
-//    output.SetSettingValue("m_Topology", new ParticleTopologyMesh());
-//    update.LinkTo(output);
-//    graph.AddChild(output);
-//}
-
-//if (outputEnum == VFXEnum.VFXOutputEnum.VFXShaderGraphQuad)
-//{
-//    var type = Type.GetType("UnityEditor.VFX.VFXComposedParticleOutput" + ", Unity.VisualEffectGraph.Editor");
-//    if (type == null)
-//    {
-//        Debug.LogError("Could not find Type!");
-//        return null;
-//    }
-
-//    var output = ScriptableObject.CreateInstance(type) as VFXContext;
-//    output.SetSettingValue("m_Topology", new ParticleTopologyPlanarPrimitive(VFXPrimitiveType.Quad));
-//    update.LinkTo(output);
-//    graph.AddChild(output);
-//}
-
-
-
-
-
-
-
-//Generates an Empty VFX Graph with all Main Modules
-//private static VFXGraph GenerateEmptyTemplate(VisualEffectAsset vfx, float gapAmount)
-//{
-//    if (vfx == null)
-//    {
-//        Debug.LogError("No VFX Asset Detected! Ensure Asset is Referenced!");
-//        return null;
-//    }
-
-//    //Resets Graph
-//    var graph = vfx.GetResource()?.GetOrCreateGraph();
-//    graph.RemoveAllChildren();
-
-//    //Creates Spawn Module
-//    var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
-//    spawner.label = UnityEngine.Random.Range(0, 10000).ToString();
-//    spawner.position = new Vector2(0, 0);
-
-//    //Creates Init Module
-//    var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
-//    init.SetSettingValue("capacity", 1024u);
-//    init.label = UnityEngine.Random.Range(0, 10000).ToString();
-//    init.position = new Vector2(0, gapAmount);
-
-//    //Creates Update Module
-//    var update = ScriptableObject.CreateInstance<VFXBasicUpdate>();
-//    update.label = UnityEngine.Random.Range(0, 10000).ToString();
-//    update.position = new Vector2(0, gapAmount * 2);
-
-//    //Creates Output Module
-//    var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
-//    output.label = UnityEngine.Random.Range(0, 10000).ToString();
-//    output.position = new Vector2(0, gapAmount * 3);
-
-//    spawner.LinkTo(init);
-//    init.LinkTo(update);
-//    update.LinkTo(output);
-
-//    graph.AddChild(spawner);
-//    graph.AddChild(init);
-//    graph.AddChild(update);
-//    graph.AddChild(output);
-
-//    return graph;
-//}
-
-
-////Random Setting
-//if (randomSetting == VFXMaker.VFXRandomSetting.Off)
-//{
-//    setSize.SetSettingValue("Random", Block.RandomMode.Off);
-//}
-//if (randomSetting == VFXMaker.VFXRandomSetting.PerComponent)
-//{
-//    setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//}
-//if (randomSetting == VFXMaker.VFXRandomSetting.Uniform)
-//{
-//    setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
-//}
-
-////Random Input
-//if (randomSetting == VFXMaker.VFXRandomSetting.Off)
-//{
-//    setSize.GetInputSlot(0).value = 1.0f;
-//}
-//else
-//{
-//    setSize.GetInputSlot(0).value = 1.0f;
-//    setSize.GetInputSlot(1).value = 10.0f;
-//}
-
-
-
-
-//Set Velocity Random per Component 
-//var setVelocity = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setVelocity.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-//setVelocity.SetSettingValue("Random", Block.RandomMode.PerComponent);
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-//init.AddChild(setVelocity);
-////Add Gravity
-//var gravity = ScriptableObject.CreateInstance<Gravity>();
-//update.AddChild(gravity);
-
-
-//public ExposedPropertyInfo() { }
-
-
-//Debug.Log(valueType);
-
-//TryGetStringMember(p, "name") ?? TryGetStringMember(p, "m_Name") ?? "<unknown>";
-
-//Debug.Log(name);
-
-//public class VFXURPLitOutputWrapper : UnityEditor.VFX.URP.VFXURPLitOutput { }
-
-
-//Link getPosition -> rotate3D
-//rotate3D.GetInputSlot(0).AddChild(getPosition.GetOutputSlot(0));
-
-
-//var rotate3D = ScriptableObject.CreateInstance<Operator.Rotate3D>();
-//var getPosition = ScriptableObject.CreateInstance<VFXAttributeParameter>();
-//getPosition.SetSettingValue("attribute", VFXAttribute.Position.name);
-//rotate3D.GetInputSlot(0).AddChild(getPosition.GetOutputSlot(0));
-//getPosition.GetOutputSlot(0).Attach(rotate3D);
-
-//setPosition.SetSettingValue("random", Block.RandomMode.Off);
-//setLifetime.GetInputSlot(1).value = 10f;
-//setVelocity.GetInputSlot(0).value = (Vector)(new Vector3(-1, 0, -1));
-//setVelocity.GetInputSlot(1).value = (Vector)(new Vector3(1, 1.5f, 1));
-
-
-
-//Create Color Operator with Random Generated Color
-//var hsvColor = ScriptableObject.CreateInstance<Operator.HSVtoRGB>();
-//hsvColor.position = new Vector2(-kContextOffset, kContextOffset * 4.0f);
-//hsvColor.GetInputSlot(0).value = new Vector3(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f, 1.0f);
-//hsvColor.GetOutputSlot(0).Link(setColor.GetInputSlot(0));
-
-//graph.AddChild(hsvColor);
-
-
-
-//Set Color
-//var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
-//setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
-//output.AddChild(setColor);
-
-
-
-//string enumString = enumTest.ToString();
-//VFXMaker.VFXEnumTest enumTest
-
-//Gets All Exposed Params from a VisualEffectAsset
-//public static VFXParameter[] GetExposedParameters(VisualEffectAsset asset)
-//{
-//    if (asset == null)
-//        return new VFXParameter[0];
-
-//    var graph = asset.GetResource()?.GetOrCreateGraph();
-//    if (graph == null)
-//        return new VFXParameter[0];
-
-//    // Parameters are children of the graph
-//    var parameters = graph.children
-//        .OfType<VFXParameter>()
-//        .Where(p => p.exposed);   // filter only exposed ones
-//        //.ToArray();
-
-//    return (VFXParameter[])parameters;
-//}
