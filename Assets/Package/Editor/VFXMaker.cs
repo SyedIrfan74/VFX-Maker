@@ -36,12 +36,6 @@ public class VFXMaker : EditorWindow
 
     private void OnEnable()
     {
-        titleContent = new GUIContent(
-            "My Tool",
-            EditorGUIUtility.IconContent("D_VFX Asset@256").image
-        );
-        return;
-
         if (icon == null)
         {
             icon = AssetDatabase.LoadAssetAtPath<Texture2D>(RussiaFall.packagePath + "/Editor/Icons/VFXMakerIcon.png");
