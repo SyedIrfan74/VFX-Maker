@@ -38,7 +38,7 @@ public class VFXMaker : EditorWindow
     {
         titleContent = new GUIContent(
             "My Tool",
-            EditorGUIUtility.IconContent("d_VFX Asset@256").image
+            EditorGUIUtility.IconContent("D_VFX Asset@256").image
         );
         return;
 
