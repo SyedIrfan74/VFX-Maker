@@ -20,7 +20,7 @@ using Operator = UnityEditor.VFX.Operator;
 
 public static class RussiaFall
 {
-    private static string packagePath = "Packages/com.github.syedirfan74.vfxmaker";
+    public static string packagePath = "Packages/com.github.syedirfan74.vfxmaker";
     private static string texturePath = packagePath + "/Textures/Star.png";
     private static string destinationPath = "Assets/VFXMaker";
     private static string assetsPath = "/Samples~";

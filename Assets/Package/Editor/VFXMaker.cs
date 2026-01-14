@@ -18,6 +18,7 @@ using UnityEngine.VFX;
 public class VFXMaker : EditorWindow
 {
     private VisualEffectAsset vfx;
+    private static Texture2D icon;
     private string path;
     private string newAssetName;
 
@@ -32,6 +33,16 @@ public class VFXMaker : EditorWindow
     private List<ExposedPropertyInfo> CEPs = new List<ExposedPropertyInfo>();
 
     private Vector2 scroll;
+
+    private void OnEnable()
+    {
+        if (icon == null)
+        {
+            icon = AssetDatabase.LoadAssetAtPath<Texture2D>(RussiaFall.packagePath + "/Editor/Icons/VFXMakerIcon.png");
+        }
+
+        titleContent = new GUIContent("VFX Maker", icon);
+    }
 
     [MenuItem("Window/VFXMaker/Spawn Window")]
     static void OpenWindow()
