@@ -38,7 +38,7 @@ public class VFXMaker : EditorWindow
     {
         titleContent = new GUIContent(
             "My Tool",
-            EditorGUIUtility.IconContent("d_EmptyTemplate@256").image
+            EditorGUIUtility.IconContent("d_UnityEditor.d_EmptyTemplate@256").image
         );
         return;
 
