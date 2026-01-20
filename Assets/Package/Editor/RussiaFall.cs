@@ -250,16 +250,20 @@ public static class RussiaFall
 
         //Creates Initialize Module
         var init = ScriptableObject.CreateInstance<VFXBasicInitialize>();
-        //init.SetSettingValue("capacity", 1024u);
+        init.SetSettingValue("capacity", 1024u);
+
         if (strip) init.SetSettingValue("dataType", VFXDataParticle.DataType.ParticleStrip);
         graph.AddChild(init);
 
         var contexts = graph.children.OfType<VFXContext>();
         var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
 
-        init.position = new Vector2(spawn.position.x, gapAmount);
-
-        spawn.LinkTo(init);
+        if (spawn != null)
+        {
+            init.position = new Vector2(spawn.position.x, gapAmount);
+            spawn.LinkTo(init);
+        }
+        else init.position = new Vector2(0, 0);
     }
 
     //Adds VFX Update Context to the Current VFX Graph
@@ -274,9 +278,12 @@ public static class RussiaFall
         var contexts = graph.children.OfType<VFXContext>();
         var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
 
-        update.position = new Vector2(init.position.x, gapAmount * 2);
-
-        init.LinkTo(update);
+        if (init != null)
+        {
+            update.position = new Vector2(init.position.x, gapAmount * 2);
+            init.LinkTo(update);
+        }
+        else update.position = new Vector2(0, 0);
     }
 
     //Adds VFX Output Context to the Current VFX Graph
@@ -290,8 +297,14 @@ public static class RussiaFall
         if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitQuad)
         {
             var output = ScriptableObject.CreateInstance<VFXPlanarPrimitiveOutput>();
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+            
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
@@ -309,8 +322,14 @@ public static class RussiaFall
         if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitMesh)
         {
             var output = ScriptableObject.CreateInstance<VFXMeshOutput>();
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
@@ -335,8 +354,14 @@ public static class RussiaFall
             }
 
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
@@ -361,8 +386,14 @@ public static class RussiaFall
             }
 
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
@@ -387,9 +418,15 @@ public static class RussiaFall
             }
 
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
-            output.position = new Vector2(update.position.x, gapAmount * 3);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             output.SetSettingValue("m_Topology", new ParticleTopologyPlanarPrimitive(VFXPrimitiveType.Quad));
-            update.LinkTo(output);
             graph.AddChild(output);
         }
 
@@ -404,9 +441,15 @@ public static class RussiaFall
             }
 
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
-            output.position = new Vector2(update.position.x, gapAmount * 3);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             output.SetSettingValue("m_Topology", new ParticleTopologyMesh());
-            update.LinkTo(output);
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Mesh) && s.property.name == "mesh");
@@ -424,8 +467,14 @@ public static class RussiaFall
         if (VFXEnum == global::VFXEnum.VFXOutputEnum.UnlitQuadStrip)
         {
             var output = ScriptableObject.CreateInstance<VFXQuadStripOutput>();
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "mainTexture");
@@ -450,8 +499,14 @@ public static class RussiaFall
             }
 
             var output = ScriptableObject.CreateInstance(type) as VFXContext;
-            output.position = new Vector2(update.position.x, gapAmount * 3);
-            update.LinkTo(output);
+
+            if (update != null)
+            {
+                output.position = new Vector2(update.position.x, gapAmount * 3);
+                update.LinkTo(output);
+            }
+            else output.position = new Vector2(0, 0);
+
             graph.AddChild(output);
 
             var slot = output.inputSlots.FirstOrDefault(s => s.property.type == typeof(Texture2D) && s.property.name == "baseColorMap");
@@ -472,7 +527,6 @@ public static class RussiaFall
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var numGraphs = GetNumGraphs(vfx);
 
-        //Creates Spawn Module
         var gpuEvent = ScriptableObject.CreateInstance<VFXBasicEvent>();
         if (overrule) gpuEvent.position = new Vector2(0, 0);
         else gpuEvent.position = new Vector2(gapAmount * numGraphs, 0);
@@ -484,26 +538,33 @@ public static class RussiaFall
     {
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-        var trigger = update.children.LastOrDefault(c => c.name.Contains("Trigger Event"));
 
-        var numGraphs = GetNumGraphs(vfx);
-
-        //Creates Spawn Module
         var gpuEvent = ScriptableObject.CreateInstance<VFXBasicGPUEvent>();
 
-        if (trigger != null)
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
         {
-            trigger.GetOutputSlot(0).Link(gpuEvent.GetInputSlot(0));
-            gpuEvent.position = new Vector2(gapAmount * numGraphs, update.position.y);
-        }
-        else
-        {
-            if (overrule) gpuEvent.position = new Vector2(0, 0);
-            else gpuEvent.position = new Vector2(gapAmount * numGraphs, 0);
+            gpuEvent.position = new Vector2(0, 0);
+            graph.AddChild(gpuEvent);
+            return;
         }
 
+        var trigger = update.children.LastOrDefault(c => c.name.Contains("Trigger Event"));
+        var numGraphs = GetNumGraphs(vfx);
+
+        if (trigger == null)
+        {
+            gpuEvent.position = new Vector2(gapAmount * numGraphs, update.position.y);
+            graph.AddChild(gpuEvent);
+            return;
+        }
+
+
+        trigger.GetOutputSlot(0).Link(gpuEvent.GetInputSlot(0));
+        gpuEvent.position = new Vector2(gapAmount * numGraphs, update.position.y);
         graph.AddChild(gpuEvent);
+        return;
     }
 
     //Adds Output Event Context to the Current VFX Graph
@@ -531,6 +592,12 @@ public static class RussiaFall
         var contexts = graph.children.OfType<VFXContext>();
         var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
 
+        if (spawn == null)
+        {
+            Debug.LogWarning("No Spawn Context Detected.");
+            return;
+        }
+
         //Constant Rate Spawner
         var constantRate = ScriptableObject.CreateInstance<VFXSpawnerConstantRate>();
         constantRate.GetInputSlot(0).value = 32.0f;
@@ -545,6 +612,12 @@ public static class RussiaFall
         var graph = vfx.GetResource()?.GetOrCreateGraph();
         var contexts = graph.children.OfType<VFXContext>();
         var spawn = contexts.LastOrDefault(c => c.contextType == VFXContextType.Spawner);
+
+        if (spawn == null)
+        {
+            Debug.LogWarning("No Spawn Context Detected.");
+            return;
+        }
 
         //Constant Rate Spawner
         var burst = ScriptableObject.CreateInstance<VFXSpawnerBurst>();
@@ -597,8 +670,30 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setPosition.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setPosition.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setPosition);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setPosition);
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setPosition);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setPosition);
+        }
     }
 
     //Adds Velocity to the current VFX Graph
@@ -635,9 +730,31 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend_NOTWORKING) setVelocity.Composition = AttributeCompositionMode.Blend;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setVelocity.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setVelocity.Composition = AttributeCompositionMode.Add;
-        
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setVelocity);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setVelocity);
+
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setVelocity);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setVelocity);
+        }
     }
 
     //Adds Lifetime to the current VFX Graph
@@ -675,8 +792,30 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setLifetime.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setLifetime.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setLifetime);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setLifetime);
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setLifetime);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setLifetime);
+        }
     }
 
     //Adds Angle to the current VFX Graph
@@ -714,135 +853,31 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setAngle.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setAngle.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setAngle);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setAngle);
-    }
-
-    public static void PositionShapeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
-
-        //Set Velocity 
-        var positionShape = ScriptableObject.CreateInstance<Block.PositionShape>();
-
-        ////Random Setting
-        //if (randomSetting == VFXEnum.VFXRandomSetting.Off) setPosition.SetSettingValue("Random", Block.RandomMode.Off);
-        //if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setPosition.SetSettingValue("Random", Block.RandomMode.PerComponent);
-        //if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setPosition.SetSettingValue("Random", Block.RandomMode.Uniform);
-
-        ////Random Input
-        //if (randomSetting == VFXEnum.VFXRandomSetting.Off)
-        //{
-        //    setPosition.GetInputSlot(0).value = (Position)(new Vector3(1, 1.5f, 1));
-        //    if (addCEPs) AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
-        //}
-        //else
-        //{
-        //    setPosition.GetInputSlot(0).value = (Position)(new Vector3(-1, 0, -1));
-        //    setPosition.GetInputSlot(1).value = (Position)(new Vector3(1, 1.5f, 1));
-        //    if (addCEPs) AddVector3Property(vfx, new Vector3(-1, 0, -1));
-        //    if (addCEPs) AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
-        //}
-
-        ////Composition setting
-        //if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setPosition.Composition = AttributeCompositionMode.Overwrite;
-        //if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend_NOTWORKING) setPosition.Composition = AttributeCompositionMode.Blend;
-        //if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setPosition.Composition = AttributeCompositionMode.Multiply;
-        //if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setPosition.Composition = AttributeCompositionMode.Add;
-
-        init.AddChild(positionShape);
-    }
-
-    //INITIALIZE END ------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-    //UPDATE START ------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    //Adds Gravity to the current VFX Graph
-    public static void GravityModule(VisualEffectAsset vfx, bool addCEPs)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-        //Add Gravity
-        var gravity = ScriptableObject.CreateInstance<Gravity>();
-        update.AddChild(gravity);
-
-        if (addCEPs) AddVector3Property(vfx, new Vector3(0, -9.81f, 0));
-    }
-
-    //Adds Drag to the current VFX Graph
-    public static void DragModule(VisualEffectAsset vfx, bool addCEPs)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-        //Add Gravity
-        var drag = ScriptableObject.CreateInstance<Block.Drag>();
-        update.AddChild(drag);
-
-        if (addCEPs) AddFloatProperty(vfx, 0);
-    }
-
-    //Adds Trigger Event to the current VFX Graph
-    public static void TriggerEventModule(VisualEffectAsset vfx)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-        //Add Gravity
-        var triggerEvent = ScriptableObject.CreateInstance<TriggerEvent>();
-        triggerEvent.SetSettingValue("mode", TriggerEvent.Mode.OnDie);
-        update.AddChild(triggerEvent);
-    }
-
-    //Adds Collision Shape to the current VFX Graph
-    public static void CollisionShapeModule(VisualEffectAsset vfx)
-    {
-        var graph = vfx.GetResource()?.GetOrCreateGraph();
-        var contexts = graph.children.OfType<VFXContext>();
-        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
-
-        //Add Gravity
-        var triggerEvent = ScriptableObject.CreateInstance<CollisionShape>();
-        update.AddChild(triggerEvent);
-    }
-
-    //Adds Named Subgraph to current VFX Graph
-    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
-    {
-        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
-
-        if (guids.Length == 0)
+        if (target == VFXEnum.VFXContextTarget.Init)
         {
-            Debug.LogError("Subgraph not found");
-            return;
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setAngle);
         }
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
-
-        if (subgraph == null)
+        else if (target == VFXEnum.VFXContextTarget.Output)
         {
-            Debug.LogWarning("No asset detected.");
-            return;
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setAngle);
         }
-
-        var graph = vfx.GetResource().GetOrCreateGraph();
-        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
-        op.SetSettingValue("m_Subgraph", subgraph);
-        graph.AddChild(op);
     }
-
-    //UPDATE END ------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-    //OUTPUT START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
     //Adds Size to the current VFX Graph
     public static void SizeModule(VisualEffectAsset vfx, VFXEnum.VFXContextTarget target, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
@@ -858,7 +893,7 @@ public static class RussiaFall
         if (randomSetting == VFXEnum.VFXRandomSetting.Off) setSize.SetSettingValue("Random", Block.RandomMode.Off);
         if (randomSetting == VFXEnum.VFXRandomSetting.PerComponent) setSize.SetSettingValue("Random", Block.RandomMode.PerComponent);
         if (randomSetting == VFXEnum.VFXRandomSetting.Uniform) setSize.SetSettingValue("Random", Block.RandomMode.Uniform);
-        
+
         //Random Input
         if (randomSetting == VFXEnum.VFXRandomSetting.Off)
         {
@@ -879,8 +914,31 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setSize.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setSize.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setSize);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setSize);
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setSize);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setSize);
+        }
+
     }
 
     //Adds Scale to the current VFX Graph
@@ -918,8 +976,30 @@ public static class RussiaFall
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setScale.Composition = AttributeCompositionMode.Multiply;
         if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setScale.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setScale);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setScale);
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setScale);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setScale);
+        }
     }
 
     //Adds Color to current VFX Graph
@@ -931,11 +1011,164 @@ public static class RussiaFall
         var setColor = ScriptableObject.CreateInstance<Block.SetAttribute>();
         setColor.SetSettingValue("attribute", VFXAttribute.Color.name);
 
-        if (target == VFXEnum.VFXContextTarget.Init) contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setColor);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setColor);
+        if (target == VFXEnum.VFXContextTarget.Init)
+        {
+            var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
 
+            if (init == null)
+            {
+                Debug.LogWarning("No Init Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(setColor);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setColor);
+        }
         if (addCEPs) AddColorProperty(vfx, new Color(1, 1, 1));
     }
+
+    //Adds Position Shapre to current VFX Graph
+    public static void PositionShapeModule(VisualEffectAsset vfx, VFXEnum.VFXRandomSetting randomSetting, VFXEnum.VFXCompositionSetting compositionSetting, bool addCEPs)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var init = contexts.LastOrDefault(c => c.contextType == VFXContextType.Init);
+
+        if (init == null)
+        {
+            Debug.LogWarning("No Init Context Detected.");
+            return;
+        }
+
+        //Set Velocity 
+        var positionShape = ScriptableObject.CreateInstance<Block.PositionShape>();
+
+        init.AddChild(positionShape);
+    }
+
+    //INITIALIZE END ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    //UPDATE START ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    //Adds Gravity to the current VFX Graph
+    public static void GravityModule(VisualEffectAsset vfx, bool addCEPs)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
+        {
+            Debug.LogWarning("No Update Context Detected.");
+            return;
+        }
+
+        //Add Gravity
+        var gravity = ScriptableObject.CreateInstance<Gravity>();
+        update.AddChild(gravity);
+
+        if (addCEPs) AddVector3Property(vfx, new Vector3(0, -9.81f, 0));
+    }
+
+    //Adds Drag to the current VFX Graph
+    public static void DragModule(VisualEffectAsset vfx, bool addCEPs)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
+        {
+            Debug.LogWarning("No Update Context Detected.");
+            return;
+        }
+
+        //Add Gravity
+        var drag = ScriptableObject.CreateInstance<Block.Drag>();
+        update.AddChild(drag);
+
+        if (addCEPs) AddFloatProperty(vfx, 0);
+    }
+
+    //Adds Trigger Event to the current VFX Graph
+    public static void TriggerEventModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
+        {
+            Debug.LogWarning("No Update Context Detected.");
+            return;
+        }
+
+        //Add Gravity
+        var triggerEvent = ScriptableObject.CreateInstance<TriggerEvent>();
+        triggerEvent.SetSettingValue("mode", TriggerEvent.Mode.OnDie);
+        update.AddChild(triggerEvent);
+    }
+
+    //Adds Collision Shape to the current VFX Graph
+    public static void CollisionShapeModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
+        {
+            Debug.LogWarning("No Update Context Detected.");
+            return;
+        }
+
+        //Add Gravity
+        var triggerEvent = ScriptableObject.CreateInstance<CollisionShape>();
+        update.AddChild(triggerEvent);
+    }
+
+    //Adds Named Subgraph to current VFX Graph
+    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
+
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Subgraph not found");
+            return;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
+
+        if (subgraph == null)
+        {
+            Debug.LogWarning("No asset detected.");
+            return;
+        }
+
+        var graph = vfx.GetResource().GetOrCreateGraph();
+        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
+        op.SetSettingValue("m_Subgraph", subgraph);
+        graph.AddChild(op);
+    }
+
+    //UPDATE END ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    //OUTPUT START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
     //Adds Orient to the current VFX Graph
     public static void OrientModule(VisualEffectAsset vfx)
@@ -944,14 +1177,18 @@ public static class RussiaFall
         var contexts = graph.children.OfType<VFXContext>();
         var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
 
+        if (output == null)
+        {
+            Debug.LogWarning("No Output Context Detected.");
+            return;
+        }
+
         //Orient 
         var orient = ScriptableObject.CreateInstance<Block.Orient>();
         orient.mode = Orient.Mode.FaceCameraPlane;
 
         output.AddChild(orient);
     }
-
-    //OUTPUT START ------------------------------------------------------------------------------------------------------------------------------------------------------
 
     //Adds Scale to the current VFX Graph
     public static void OverLifeModule(VisualEffectAsset vfx, VFXEnum.VFXAttributes attribute, VFXEnum.VFXCompositionSetting compositionSetting, VFXEnum.VFXContextTarget target)
@@ -960,27 +1197,48 @@ public static class RussiaFall
         var contexts = graph.children.OfType<VFXContext>();
         
         //Set Velocity Random per Component 
-        var setScale = ScriptableObject.CreateInstance<Block.AttributeFromCurve>();
+        var overLife = ScriptableObject.CreateInstance<Block.AttributeFromCurve>();
 
-        if (attribute == VFXEnum.VFXAttributes.position) setScale.SetSettingValue("attribute", VFXAttribute.Position.name);
-        if (attribute == VFXEnum.VFXAttributes.velocity) setScale.SetSettingValue("attribute", VFXAttribute.Velocity.name);
-        if (attribute == VFXEnum.VFXAttributes.color) setScale.SetSettingValue("attribute", VFXAttribute.Color.name);
-        if (attribute == VFXEnum.VFXAttributes.alpha) setScale.SetSettingValue("attribute", VFXAttribute.Alpha.name);
-        if (attribute == VFXEnum.VFXAttributes.size) setScale.SetSettingValue("attribute", VFXAttribute.Size.name);
-        if (attribute == VFXEnum.VFXAttributes.scale) setScale.SetSettingValue("attribute", VFXAttribute.scale.name);
-        if (attribute == VFXEnum.VFXAttributes.angle) setScale.SetSettingValue("attribute", VFXAttribute.angle.name);
+        if (attribute == VFXEnum.VFXAttributes.position) overLife.SetSettingValue("attribute", VFXAttribute.Position.name);
+        if (attribute == VFXEnum.VFXAttributes.velocity) overLife.SetSettingValue("attribute", VFXAttribute.Velocity.name);
+        if (attribute == VFXEnum.VFXAttributes.color) overLife.SetSettingValue("attribute", VFXAttribute.Color.name);
+        if (attribute == VFXEnum.VFXAttributes.alpha) overLife.SetSettingValue("attribute", VFXAttribute.Alpha.name);
+        if (attribute == VFXEnum.VFXAttributes.size) overLife.SetSettingValue("attribute", VFXAttribute.Size.name);
+        if (attribute == VFXEnum.VFXAttributes.scale) overLife.SetSettingValue("attribute", VFXAttribute.scale.name);
+        if (attribute == VFXEnum.VFXAttributes.angle) overLife.SetSettingValue("attribute", VFXAttribute.angle.name);
 
         //Composition setting
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) setScale.Composition = AttributeCompositionMode.Overwrite;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend_NOTWORKING) setScale.Composition = AttributeCompositionMode.Blend;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) setScale.Composition = AttributeCompositionMode.Multiply;
-        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) setScale.Composition = AttributeCompositionMode.Add;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Overwrite) overLife.Composition = AttributeCompositionMode.Overwrite;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Blend_NOTWORKING) overLife.Composition = AttributeCompositionMode.Blend;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Multiply) overLife.Composition = AttributeCompositionMode.Multiply;
+        if (compositionSetting == VFXEnum.VFXCompositionSetting.Add) overLife.Composition = AttributeCompositionMode.Add;
 
-        if (target == VFXEnum.VFXContextTarget.Update) contexts.LastOrDefault(c => c.contextType == VFXContextType.Update).AddChild(setScale);
-        if (target == VFXEnum.VFXContextTarget.Output) contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(setScale);
+        if (target == VFXEnum.VFXContextTarget.Update)
+        {
+            var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+            if (update == null)
+            {
+                Debug.LogWarning("No Update Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(overLife);
+        }
+        else if (target == VFXEnum.VFXContextTarget.Output)
+        {
+            var output = contexts.LastOrDefault(c => c.contextType == VFXContextType.Output);
+
+            if (output == null)
+            {
+                Debug.LogWarning("No Output Context Detected");
+                return;
+            }
+
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Output).AddChild(overLife);
+        }
     }
 
-    
     //Add Exposed Float Property to the Graph
     public static void AddFloatProperty(VisualEffectAsset vfx, float defaultValue)
     {
