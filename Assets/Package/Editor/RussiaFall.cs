@@ -1223,7 +1223,7 @@ public static class RussiaFall
                 return;
             }
 
-            contexts.LastOrDefault(c => c.contextType == VFXContextType.Init).AddChild(overLife);
+            contexts.LastOrDefault(c => c.contextType == VFXContextType.Update).AddChild(overLife);
         }
         else if (target == VFXEnum.VFXContextTarget.Output)
         {
