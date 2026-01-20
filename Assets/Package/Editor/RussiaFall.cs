@@ -813,6 +813,32 @@ public static class RussiaFall
         update.AddChild(triggerEvent);
     }
 
+    //Adds Named Subgraph to current VFX Graph
+    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
+
+        if (guids.Length == 0)
+        {
+            Debug.LogError("Subgraph not found");
+            return;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
+
+        if (subgraph == null)
+        {
+            Debug.LogWarning("No asset detected.");
+            return;
+        }
+
+        var graph = vfx.GetResource().GetOrCreateGraph();
+        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
+        op.SetSettingValue("m_Subgraph", subgraph);
+        graph.AddChild(op);
+    }
+
     //UPDATE END ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1215,31 +1241,6 @@ public static class RussiaFall
         {
             Debug.Log(settings[i].name + " | " + settings[i].value);
         }
-    }
-
-    public static void SpawnSubgraph(VisualEffectAsset vfx, string subgraphName)
-    {
-        string[] guids = AssetDatabase.FindAssets("t:VisualEffectSubgraphOperator " + subgraphName);
-
-        if (guids.Length == 0)
-        {
-            Debug.LogError("Subgraph not found");
-            return;
-        }
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        var subgraph = AssetDatabase.LoadAssetAtPath<VisualEffectSubgraphOperator>(path);
-
-        if (subgraph == null)
-        {
-            Debug.LogWarning("No asset detected.");
-            return;
-        }
-
-        var graph = vfx.GetResource().GetOrCreateGraph();
-        var op = ScriptableObject.CreateInstance<VFXSubgraphOperator>();
-        op.SetSettingValue("m_Subgraph", subgraph);
-        graph.AddChild(op);
     }
 
     public static Texture2D GetTextureAsset(string textureName)
