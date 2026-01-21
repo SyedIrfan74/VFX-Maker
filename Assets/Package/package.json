@@ -2,7 +2,8 @@
   "name": "com.github.syedirfan74.vfxmaker",
   "version": "0.5.0",
   "displayName": "VFX Maker",
-  "description": "Simple to use VFX Maker to help learn and master VFX Graph",
+  "description": "Simple to use VFX Maker to help learn and master VFX Graph.",
+  "url": "https://docs.google.com/document/d/1sQhRlmpcKK13tJSeFsplfwlOzV3MkJ5CkS8E6sB2Z54/edit?usp=sharing",
   "unity": "6000.0",
   "dependencies": {
     "com.unity.visualeffectgraph": "17.0.4"
@@ -16,7 +17,7 @@
     {
       "displayName": "Example Assets",
       "description": "Included Assets from Author",
-      "path":  "Samples~/Assets"
+      "path": "Samples~/Assets"
     }
   ]
 }
