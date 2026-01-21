@@ -1,6 +1,6 @@
 {
   "name": "com.github.syedirfan74.vfxmaker",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "displayName": "VFX Maker",
   "description": "Simple to use VFX Maker to help learn and master VFX Graph",
   "unity": "6000.0",
@@ -14,7 +14,7 @@
   },
   "samples": [
     {
-      "displayName": "Assets",
+      "displayName": "Example Assets",
       "description": "Included Assets from Author",
       "path":  "Samples~/Assets"
     }
