@@ -202,7 +202,11 @@ public class VFXMaker : EditorWindow
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Gravity")) RussiaFall.GravityModule(vfx, addCEPs);
         if (GUILayout.Button("Drag")) RussiaFall.DragModule(vfx, addCEPs);
-        if (GUILayout.Button("Subgraph")) RussiaFall.SpawnSubgraph(vfx, "Spherical Orbit");
+        if (GUILayout.Button("Turbulence")) RussiaFall.TurbulenceModule(vfx);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        //if (GUILayout.Button("Subgraph")) RussiaFall.SpawnSubgraph(vfx, "Spherical Orbit");
         GUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();

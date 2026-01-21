@@ -1165,6 +1165,23 @@ public static class RussiaFall
         graph.AddChild(op);
     }
 
+    public static void TurbulenceModule(VisualEffectAsset vfx)
+    {
+        var graph = vfx.GetResource()?.GetOrCreateGraph();
+        var contexts = graph.children.OfType<VFXContext>();
+        var update = contexts.LastOrDefault(c => c.contextType == VFXContextType.Update);
+
+        if (update == null)
+        {
+            Debug.LogWarning("No Update Context Detected.");
+            return;
+        }
+
+        //Add Gravity
+        var turbulence = ScriptableObject.CreateInstance<Turbulence>();
+        update.AddChild(turbulence);
+    }
+
     //UPDATE END ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
