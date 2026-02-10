@@ -6,7 +6,11 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.VFX;
 using UnityEditor.VFX.Block;
+using UnityEditor.VFX.UI;
 using UnityEngine;
+using UnityEngine.UIElements;
+
+//using UnityEngine.UIElements;
 using UnityEngine.VFX;
 using Block = UnityEditor.VFX.Block;
 using Operator = UnityEditor.VFX.Operator;
@@ -85,6 +89,7 @@ public static class RussiaFall
     }
 
     //Import Assets into User's Project
+    [MenuItem("Assets/VFXMaker/Import Assets", priority = 20)]
     [MenuItem("Window/VFXMaker/Import Assets")]
     public static void ImportAssets()
     {
@@ -178,7 +183,7 @@ public static class RussiaFall
 
         //Rotate 3D Operator, Link to Set Position
         var rotate3D = ScriptableObject.CreateInstance<Operator.Rotate3D>();
-        rotate3D.GetInputSlot(1).value = (Position)(new Vector3(1, 0, 0));
+        rotate3D.GetInputSlot(1).value = (UnityEditor.VFX.Position)(new Vector3(1, 0, 0));
         rotate3D.GetInputSlot(3).value = 0.1f;
         rotate3D.GetOutputSlot(0).Link(setPosition.GetInputSlot(0));
 
@@ -238,6 +243,11 @@ public static class RussiaFall
 
         //Creates Spawn Module
         var spawner = ScriptableObject.CreateInstance<VFXBasicSpawner>();
+
+        var haha = GetGraphViewCenter(GetVFXView(FindVFXEditorWindow()));
+
+        Debug.Log(haha);
+
         if (overrule) spawner.position = new Vector2(0, 0);
         else spawner.position = new Vector2(gapAmount * numGraphs, 0);
         graph.AddChild(spawner);
@@ -653,13 +663,13 @@ public static class RussiaFall
         //Random Input
         if (randomSetting == VFXEnum.VFXRandomSetting.Off)
         {
-            setPosition.GetInputSlot(0).value = (Position)(new Vector3(1, 1.5f, 1));
+            setPosition.GetInputSlot(0).value = (UnityEditor.VFX.Position)(new Vector3(1, 1.5f, 1));
             if (addCEPs) AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
         }
         else
         {
-            setPosition.GetInputSlot(0).value = (Position)(new Vector3(-1, 0, -1));
-            setPosition.GetInputSlot(1).value = (Position)(new Vector3(1, 1.5f, 1));
+            setPosition.GetInputSlot(0).value = (UnityEditor.VFX.Position)(new Vector3(-1, 0, -1));
+            setPosition.GetInputSlot(1).value = (UnityEditor.VFX.Position)(new Vector3(1, 1.5f, 1));
             if (addCEPs) AddVector3Property(vfx, new Vector3(-1, 0, -1));
             if (addCEPs) AddVector3Property(vfx, new Vector3(1, 1.5f, 1));
         }
@@ -1549,4 +1559,71 @@ public static class RussiaFall
 
         return mesh;
     }
+
+    static EditorWindow FindVFXEditorWindow()
+    {
+        var editor = Resources.FindObjectsOfTypeAll<EditorWindow>().FirstOrDefault(w => w.GetType().Name == "VFXViewWindow");
+        if (editor == null)
+        {
+            Debug.LogWarning("No Editor Window Found.");
+            return null;
+        }
+
+        Debug.Log(editor);
+
+        return editor;
+    }
+
+    static VFXView GetVFXView(EditorWindow window)
+    {
+        if (window == null)
+        {
+            Debug.Log("window == null");
+            return null;
+        }
+
+        var field = window.GetType().GetField("m_VFXView", BindingFlags.Instance | BindingFlags.NonPublic);
+        var view = field?.GetValue(window) as VFXView;
+
+        Debug.Log(field);
+        Debug.Log(view);
+
+        return field?.GetValue(window) as VFXView;
+    }
+
+    static Vector2 GetGraphViewCenter(VFXView vfxView)
+    {
+        var graphViewField = typeof(VFXView).GetField("graphView", BindingFlags.Instance | BindingFlags.NonPublic);
+        var graphView = graphViewField?.GetValue(vfxView) as VisualElement;
+
+        if (graphView == null)
+        {
+            Debug.Log("graphView == null");
+            return Vector2.zero;
+        }
+            
+
+        var contentContainer = graphView.Q("content-container");
+
+        if (contentContainer == null)
+        {
+            Debug.Log("contentContainer == null");
+            return Vector2.zero;
+        }
+
+        Rect viewRect = graphView.layout;
+        Vector2 viewCenter = viewRect.center;
+
+        Matrix4x4 inv = contentContainer.worldTransform.inverse;
+        return inv.MultiplyPoint(viewCenter);
+    }
 }
+
+
+
+
+//static VFXView FindActiveVFXView()
+//{
+//    var windows = Resources.FindObjectsOfTypeAll<VFXView>();
+//    return windows.Length > 0 ? windows[0] : null;
+//}

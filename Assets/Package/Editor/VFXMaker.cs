@@ -44,6 +44,7 @@ public class VFXMaker : EditorWindow
         titleContent = new GUIContent("VFX Maker", icon);
     }
 
+    [MenuItem("Assets/VFXMaker/Spawn Window", priority = 20)]
     [MenuItem("Window/VFXMaker/Spawn Window")]
     static void OpenWindow()
     {
